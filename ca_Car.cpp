@@ -1,81 +1,81 @@
 /****************************
-*ÁìÓò¸²¸ÇËã·¨ÑİÊ¾³ÌĞò
+*é¢†åŸŸè¦†ç›–ç®—æ³•æ¼”ç¤ºç¨‹åº
 *****************************/
 
 #include <iostream>
-#include <algorithm> //Ëã·¨¿â
-#include <fstream>   // ¶ÔÎÄ¼ş²Ù×÷µÄº¯Êı¼¯
+#include <algorithm> //ç®—æ³•åº“
+#include <fstream>   // å¯¹æ–‡ä»¶æ“ä½œçš„å‡½æ•°é›†
 #include <string>
 #include <vector>
 #include <cmath>
 #include <cstring> 
 #include <cstdlib>
 #include <cstdio> 
-#include <ctime>   //°ÑÈÕÆÚºÍÊ±¼ä×ª»»³É×Ö·û´®
+#include <ctime>   //æŠŠæ—¥æœŸå’Œæ—¶é—´è½¬æ¢æˆå­—ç¬¦ä¸²
 #include <cfloat>
 #include<math.h>
 #include<iomanip>
 using namespace std;
 
 typedef struct Sample
-{	//Ñù±¾Êı¾İ½á¹¹
-	int dim;			//Ñù±¾Î¬Êı
-	vector<double>	x;	//Ñù±¾ÏòÁ¿
-	int				y;	//Ñù±¾Àà±ğ
+{	//æ ·æœ¬æ•°æ®ç»“æ„
+	int dim;			//æ ·æœ¬ç»´æ•°
+	vector<double>	x;	//æ ·æœ¬å‘é‡
+	int				y;	//æ ·æœ¬ç±»åˆ«
 }Sample;
 
 typedef struct SampleTag
-{//Ñù±¾±êºÅ
-	int id; 			//Ñù±¾ĞòºÅ
-	int covered;		//Õâ¸öĞòºÅµÄÑù±¾ÊÇ·ñ±»¸²¸Ç, 1 ±íÊ¾±»¸²¸Ç£¬0±íÊ¾Ã»ÓĞÃ»¸²¸Ç 
+{//æ ·æœ¬æ ‡å·
+	int id; 			//æ ·æœ¬åºå·
+	int covered;		//è¿™ä¸ªåºå·çš„æ ·æœ¬æ˜¯å¦è¢«è¦†ç›–, 1 è¡¨ç¤ºè¢«è¦†ç›–ï¼Œ0è¡¨ç¤ºæ²¡æœ‰æ²¡è¦†ç›– 
 }SampleTag;
 
 typedef struct SampleSubSet
-{	//Ñù±¾×Ó¼¯±êºÅ£¬Ëü±íÊ¾Í¬Ò»ÀàËùÓĞÑù±¾µÄ±êºÅ			
-	int y; 					//×Ó¼¯µÄÀà±ğ 
-	vector<SampleTag*> v;		//id¼¯ºÏ
+{	//æ ·æœ¬å­é›†æ ‡å·ï¼Œå®ƒè¡¨ç¤ºåŒä¸€ç±»æ‰€æœ‰æ ·æœ¬çš„æ ‡å·			
+	int y; 					//å­é›†çš„ç±»åˆ« 
+	vector<SampleTag*> v;		//idçš„é›†åˆ
 }SampleSubSet;
 
 typedef struct Cover
-{	//¸²¸ÇµÄÊı¾İ½á¹¹
-	int *sid;			// Ñù±¾ĞòºÅ
-	int seq;			//¸²¸ÇĞòºÅ
-	int cls;			//¸²¸ÇµÄÀà±ğ
-	double r;		 	//¸²¸Ç°ë¾¶
-	double* center;	//¸²¸ÇµÄÔ²ĞÄ
-	double ybs;			//¸²¸ÇµÄÑù±¾Êı 
+{	//è¦†ç›–çš„æ•°æ®ç»“æ„
+	int *sid;			// æ ·æœ¬åºå·
+	int seq;			//è¦†ç›–åºå·
+	int cls;			//è¦†ç›–çš„ç±»åˆ«
+	double r;		 	//è¦†ç›–åŠå¾„
+	double* center;	//è¦†ç›–çš„åœ†å¿ƒ
+	double ybs;			//è¦†ç›–çš„æ ·æœ¬æ•° 
 }Cover;
 
 typedef struct ExpResult
-{	//ÊµÑé½á¹ûÊı¾İ½á¹¹
+{	//å®éªŒç»“æœæ•°æ®ç»“æ„
 	int a0, a1, a2, a3, a4, a5;
-	int trNum;			//ÑµÁ·Ñù±¾Êı
-	int teNum;			//²âÊÔÑù±¾Êı
-	int covNum;		//¸²¸ÇÊı
-	double trTime;		//ÑµÁ·ºÄÊ±
-	double teTime;		//²âÊÔºÄÊ±
-	int refuse;		//²âÊÔ¾ÜÊ¶Ñù±¾Êı
-	int guess_corr;	//¾ÜÊ¶Ñù±¾ÖĞ¸ù¾İÔ²ĞÄ×î½ü²Â²âÕıÈ·µÄÑù±¾Êı
-	int correct;		//ÕıÈ·Ê¶±ğÑù±¾Êı
-	double corr_rate;	//ÕıÈ·Ê¶±ğÂÊ£¬(corr_rate + guess_corr)/teNum
-	int C0N, C1N;//C0,C1Àà¸²¸ÇµÄÊıÄ¿
+	int trNum;			//è®­ç»ƒæ ·æœ¬æ•°
+	int teNum;			//æµ‹è¯•æ ·æœ¬æ•°
+	int covNum;		//è¦†ç›–æ•°
+	double trTime;		//è®­ç»ƒè€—æ—¶
+	double teTime;		//æµ‹è¯•è€—æ—¶
+	int refuse;		//æµ‹è¯•æ‹’è¯†æ ·æœ¬æ•°
+	int guess_corr;	//æ‹’è¯†æ ·æœ¬ä¸­æ ¹æ®åœ†å¿ƒæœ€è¿‘çŒœæµ‹æ­£ç¡®çš„æ ·æœ¬æ•°
+	int correct;		//æ­£ç¡®è¯†åˆ«æ ·æœ¬æ•°
+	double corr_rate;	//æ­£ç¡®è¯†åˆ«ç‡ï¼Œ(corr_rate + guess_corr)/teNum
+	int C0N, C1N;//C0,C1ç±»è¦†ç›–çš„æ•°ç›®
 }ExpResult;
 
 
 
 //########################################################################## 
-//È«¾Ö±äÁ¿ 
-int G_lev = 0; //±£´æ×îÓÅ²ã×éºÏ
+//å…¨å±€å˜é‡ 
+int G_lev = 0; //ä¿å­˜æœ€ä¼˜å±‚ç»„åˆ
 int Cn = 0;
-vector<int> BND_sample_id;      //±£´æ ±ß½çÓò Ñù±¾ id
-vector<int> POS_sample_id;      //±£´æ ÕıÓò   Ñù±¾ id
-vector<int> NEG_sample_id;      //±£´æ ¸ºÓò   Ñù±¾ id
-vector<Sample*> samples;		//Ñù±¾¼¯ºÏ
-vector<SampleSubSet*> I;		//Ñù±¾×Ó¼¯±àºÅ
-vector<Cover*> C;				//¸²¸Ç
+vector<int> BND_sample_id;      //ä¿å­˜ è¾¹ç•ŒåŸŸ æ ·æœ¬ id
+vector<int> POS_sample_id;      //ä¿å­˜ æ­£åŸŸ   æ ·æœ¬ id
+vector<int> NEG_sample_id;      //ä¿å­˜ è´ŸåŸŸ   æ ·æœ¬ id
+vector<Sample*> samples;		//æ ·æœ¬é›†åˆ
+vector<SampleSubSet*> I;		//æ ·æœ¬å­é›†ç¼–å·
+vector<Cover*> C;				//è¦†ç›–
 vector<Cover*> C1;
 vector<Cover*> C2, C3, C4;
-vector<ExpResult*> Result;		//ÊµÑé½á¹û	
+vector<ExpResult*> Result;		//å®éªŒç»“æœ	
 int SubSet_POS[4][6] = {
 	
 	{ 1, 2, 3, 4, 5, 6 },//0
@@ -98,12 +98,12 @@ int SubSet_NEG[5][6] = {
 
 
 /*********************************************************************
-*	Õâ¸öº¯ÊıÊÇÑù±¾¶ÁÈ¡µÄ¸¨Öúº¯Êı£¬½«×Ö·û´®strÓÃ×Ö·ûspliter·Ö¿ª£¬
-*	²¢´æÈëvector<string>ÖĞ
+*	è¿™ä¸ªå‡½æ•°æ˜¯æ ·æœ¬è¯»å–çš„è¾…åŠ©å‡½æ•°ï¼Œå°†å­—ç¬¦ä¸²strç”¨å­—ç¬¦spliteråˆ†å¼€ï¼Œ
+*	å¹¶å­˜å…¥vector<string>ä¸­
 **********************************************************************/
 void split(string& str, char spliter, vector<string>& vec)
 {
-	string::iterator iter1, iter2;  //µü´úÆ÷(iterator)ÊÇÒ»ÖÖÔÊĞí³ÌĞòÔ±¼ì²éÈİÆ÷ÄÚÔªËØ£¬²¢ÊµÏÖÔªËØ±éÀúµÄÊı¾İÀàĞÍ
+	string::iterator iter1, iter2;  //è¿­ä»£å™¨(iterator)æ˜¯ä¸€ç§å…è®¸ç¨‹åºå‘˜æ£€æŸ¥å®¹å™¨å†…å…ƒç´ ï¼Œå¹¶å®ç°å…ƒç´ éå†çš„æ•°æ®ç±»å‹
 	if (str == "")
 		return;
 
@@ -126,7 +126,7 @@ void split(string& str, char spliter, vector<string>& vec)
 
 	}//while
 
-	//´¦Àí×îºóÒ»¸ö×Ö·û´®
+	//å¤„ç†æœ€åä¸€ä¸ªå­—ç¬¦ä¸²
 	if (iter1 != str.end() && *iter1 != spliter)
 	{
 		vec.push_back(string(iter1, iter2));
@@ -134,15 +134,15 @@ void split(string& str, char spliter, vector<string>& vec)
 }
 
 /*********************************************************************
-*	Õâ¸öº¯ÊıÊÇÑù±¾¶ÁÈ¡µÄ¸¨Öúº¯Êı£¬½«Ò»¸ö·ûºÏUCI¸ñÊ½µÄÒ»ĞĞÑù±¾×Ö·û´®s
-*	×ª»»³É×Ô¶¨ÒåµÄsample¸ñÊ½
+*	è¿™ä¸ªå‡½æ•°æ˜¯æ ·æœ¬è¯»å–çš„è¾…åŠ©å‡½æ•°ï¼Œå°†ä¸€ä¸ªç¬¦åˆUCIæ ¼å¼çš„ä¸€è¡Œæ ·æœ¬å­—ç¬¦ä¸²s
+*	è½¬æ¢æˆè‡ªå®šä¹‰çš„sampleæ ¼å¼
 **********************************************************************/
 void dealSample_uci_format(string& s, Sample& sample)
 {
-	char spliter[] = { ',', ' ', '\t', ';', ':' };   //Ñù±¾·ÖÁ¿·Ö¸ô·û 
+	char spliter[] = { ',', ' ', '\t', ';', ':' };   //æ ·æœ¬åˆ†é‡åˆ†éš”ç¬¦ 
 	int k = -1;
 	for (int i = 0; i < 5; ++i)
-	{//×Ô¶¯Ñ°ÕÒÑù±¾·Ö¸ô·û
+	{//è‡ªåŠ¨å¯»æ‰¾æ ·æœ¬åˆ†éš”ç¬¦
 		string::size_type loc = s.find(spliter[i], 0);
 		if (string::npos == loc)
 		{
@@ -156,11 +156,11 @@ void dealSample_uci_format(string& s, Sample& sample)
 	}
 	if (k < 0)
 	{
-		printf("Ñù±¾¸ñÊ½ÓĞ´í£¡\n");
+		printf("æ ·æœ¬æ ¼å¼æœ‰é”™ï¼\n");
 		exit(0);
 	}
 
-	//·Ö¸îÑù±¾
+	//åˆ†å‰²æ ·æœ¬
 	vector<string> vec_str;
 	split(s, spliter[k], vec_str);
 
@@ -178,39 +178,39 @@ void dealSample_uci_format(string& s, Sample& sample)
 }
 
 /*********************************************************************
-*	¼ÓÔØÑù±¾º¯Êı£¬´«ÈëÑù±¾ÎÄ¼şÃû sample_set_file£¬½«Ñù±¾Öµ¶ÁÈ¡µ½
-*	È«¾Ö±äÁ¿samplesÖĞ
+*	åŠ è½½æ ·æœ¬å‡½æ•°ï¼Œä¼ å…¥æ ·æœ¬æ–‡ä»¶å sample_set_fileï¼Œå°†æ ·æœ¬å€¼è¯»å–åˆ°
+*	å…¨å±€å˜é‡samplesä¸­
 **********************************************************************/
 void loadSample(const string& sample_set_file)
 {
 	if (sample_set_file == "")
 	{
-		cout << "Ñù±¾ÎÄ¼ş²»ÄÜÎª¿Õ!" << endl;
+		cout << "æ ·æœ¬æ–‡ä»¶ä¸èƒ½ä¸ºç©º!" << endl;
 		getchar();
 		exit(0);
 	}
-	//´ò¿ªÑù±¾ÎÄ¼ş
-	fstream ifs(sample_set_file.c_str(), ios::in); //.c_str()Ö¸ÏòÎÄ¼şsample_set_fileÀïÃæµÄÄÚÈİ 
+	//æ‰“å¼€æ ·æœ¬æ–‡ä»¶
+	fstream ifs(sample_set_file.c_str(), ios::in); //.c_str()æŒ‡å‘æ–‡ä»¶sample_set_fileé‡Œé¢çš„å†…å®¹ 
 	if (!ifs)
 	{
-		cout << "´ò¿ªÑù±¾ÎÄ¼şÊ§°Ü!" << endl;
+		cout << "æ‰“å¼€æ ·æœ¬æ–‡ä»¶å¤±è´¥!" << endl;
 		getchar();
 		exit(0);
 	}
 
 	string line = "";
-	while (getline(ifs, line)) // getline(cin,s)º¯Êı×÷ÓÃ£º½«cin×Ö·û´®¸³Öµ¸øs
+	while (getline(ifs, line)) // getline(cin,s)å‡½æ•°ä½œç”¨ï¼šå°†cinå­—ç¬¦ä¸²èµ‹å€¼ç»™s
 	{
 		Sample* sample = new Sample;
-		dealSample_uci_format(line, *sample); //´¦Àíuci¸ñÊ½µÄÑù±¾
+		dealSample_uci_format(line, *sample); //å¤„ç†uciæ ¼å¼çš„æ ·æœ¬
 		samples.push_back(sample);
 	}
 	ifs.close();
 }
 
 /*********************************************************************
-*	Ñù±¾ÅÅĞò±È½Ïº¯Êı£¬ÅÅĞòº¯Êı»áÀûÓÃÕâ¸öº¯Êı¸ù¾İÆäÄ¿±êÖµ
-*	¶ÔÑù±¾ÅÅĞò £¬aºÍbÊÇÑù±¾µÄÖ¸Õë
+*	æ ·æœ¬æ’åºæ¯”è¾ƒå‡½æ•°ï¼Œæ’åºå‡½æ•°ä¼šåˆ©ç”¨è¿™ä¸ªå‡½æ•°æ ¹æ®å…¶ç›®æ ‡å€¼
+*	å¯¹æ ·æœ¬æ’åº ï¼Œaå’Œbæ˜¯æ ·æœ¬çš„æŒ‡é’ˆ
 **********************************************************************/
 
 bool cmp(Sample* a, Sample* b)
@@ -226,21 +226,21 @@ bool cmp(Sample* a, Sample* b)
 }
 
 /*********************************************************************
-*	Ñù±¾ÅÅĞòº¯Êı£¬¸ù¾İÑù±¾µÄÄ¿±êÖµ½«Ñù±¾ÅÅĞò£¬²¢½«ÅÅĞò½á¹û´æÈë
-*	È«¾Ö±äÁ¿IÖĞ£¬I[k]±íÊ¾µÚkÀàµÄËùÓĞÑù±¾ĞòºÅµÄ¼¯ºÏ
+*	æ ·æœ¬æ’åºå‡½æ•°ï¼Œæ ¹æ®æ ·æœ¬çš„ç›®æ ‡å€¼å°†æ ·æœ¬æ’åºï¼Œå¹¶å°†æ’åºç»“æœå­˜å…¥
+*	å…¨å±€å˜é‡Iä¸­ï¼ŒI[k]è¡¨ç¤ºç¬¬kç±»çš„æ‰€æœ‰æ ·æœ¬åºå·çš„é›†åˆ
 **********************************************************************/
 void sortSample()
 {
-	//¸øÑù±¾¼¯ºÏÅÅĞò£¬½«ÏàÍ¬µÄÀà±ğ·ÅÔÚÒ»Æğ
-	sort(samples.begin(), samples.end(), cmp); //ÕâÀïÒÑ¾­¶ÔÑù±¾µÄÀà±ğ½øĞĞÁËÅÅĞò
-	SampleSubSet* subset = new SampleSubSet;   //½¨Á¢Ò»¸öĞÂµÄsubset×Ó¼¯
+	//ç»™æ ·æœ¬é›†åˆæ’åºï¼Œå°†ç›¸åŒçš„ç±»åˆ«æ”¾åœ¨ä¸€èµ·
+	sort(samples.begin(), samples.end(), cmp); //è¿™é‡Œå·²ç»å¯¹æ ·æœ¬çš„ç±»åˆ«è¿›è¡Œäº†æ’åº
+	SampleSubSet* subset = new SampleSubSet;   //å»ºç«‹ä¸€ä¸ªæ–°çš„subsetå­é›†
 	int y = samples[0]->y;
-	subset->y = y;                             //½«µÚÒ»¸öÑù±¾µÄÀà±ğ ×÷Îª×Ó¼¯subsetµÄÀà±ğ
-	SampleTag* tag = new SampleTag;    //½¨Á¢Ò»¸öĞÂµÄÑù±¾±êºÅtag,²¢ÇÒ¸øÆä¸³ÓèÒ»¸öĞÂµÄid ÒÔ¼°covered
+	subset->y = y;                             //å°†ç¬¬ä¸€ä¸ªæ ·æœ¬çš„ç±»åˆ« ä½œä¸ºå­é›†subsetçš„ç±»åˆ«
+	SampleTag* tag = new SampleTag;    //å»ºç«‹ä¸€ä¸ªæ–°çš„æ ·æœ¬æ ‡å·tag,å¹¶ä¸”ç»™å…¶èµ‹äºˆä¸€ä¸ªæ–°çš„id ä»¥åŠcovered
 	tag->id = 0;
 	tag->covered = 0;
-	subset->v.push_back(tag);          //½«ĞÂ½¨µÄÑù±¾±êºÅtagÌí¼Óµ½×Ó¼¯subsetÖĞ£¬×÷Îª¿ªÊ¼
-	for (size_t i = 1; i < samples.size(); ++i) // ÏÖÔÚ´ÓsamplesµÚÒ»¸öÑù±¾¿ªÊ¼£¬ÒÔÊÇ·ñ±»¸²¸ÇÎªÆÀÅĞ±ê×¼£¬½øĞĞ·ÖÀà
+	subset->v.push_back(tag);          //å°†æ–°å»ºçš„æ ·æœ¬æ ‡å·tagæ·»åŠ åˆ°å­é›†subsetä¸­ï¼Œä½œä¸ºå¼€å§‹
+	for (size_t i = 1; i < samples.size(); ++i) // ç°åœ¨ä»samplesç¬¬ä¸€ä¸ªæ ·æœ¬å¼€å§‹ï¼Œä»¥æ˜¯å¦è¢«è¦†ç›–ä¸ºè¯„åˆ¤æ ‡å‡†ï¼Œè¿›è¡Œåˆ†ç±»
 	{
 		if (samples[i]->y == y)
 		{
@@ -251,8 +251,8 @@ void sortSample()
 		}
 		else
 		{
-			I.push_back(subset);     //IÖĞ´æ´¢µÄÊÇ×Ó¼¯ÖÖÀà£¬Ò²¾ÍÊÇÓĞÁ½ÖÖÀà±ğµÄ×Ó¼¯£¬±»¸²¸ÇÒ»Àà + Ã»ÓĞ±»¸²¸ÇÒ»Àà
-			subset = new SampleSubSet; //µ«ÊÇIÖĞ²»Ö¹2Àà£¬Ó¦¸ÃËµÏÖÔÚÓĞnÀà£¬Ö»ÊÇÓĞºÜ¶àÀàÊÇÏàÍ¬£¬ÒªÊÇ°´ÕÕÊÇ·ñ±»¸²¸ÇÀ´·ÖÀàµÄ»°£¬×Ü¹²¾ÍÓĞ2Àà
+			I.push_back(subset);     //Iä¸­å­˜å‚¨çš„æ˜¯å­é›†ç§ç±»ï¼Œä¹Ÿå°±æ˜¯æœ‰ä¸¤ç§ç±»åˆ«çš„å­é›†ï¼Œè¢«è¦†ç›–ä¸€ç±» + æ²¡æœ‰è¢«è¦†ç›–ä¸€ç±»
+			subset = new SampleSubSet; //ä½†æ˜¯Iä¸­ä¸æ­¢2ç±»ï¼Œåº”è¯¥è¯´ç°åœ¨æœ‰nç±»ï¼Œåªæ˜¯æœ‰å¾ˆå¤šç±»æ˜¯ç›¸åŒï¼Œè¦æ˜¯æŒ‰ç…§æ˜¯å¦è¢«è¦†ç›–æ¥åˆ†ç±»çš„è¯ï¼Œæ€»å…±å°±æœ‰2ç±»
 			y = samples[i]->y;
 			subset->y = y;
 			tag = new SampleTag;
@@ -265,10 +265,10 @@ void sortSample()
 }
 
 /*********************************************************************
-*	ÇóÒ»¸öÑù±¾ÏòÁ¿µÄÄ£³¤    sqrt()º¯ÊıÊÇÆ½·½¸ùº¯Êı
+*	æ±‚ä¸€ä¸ªæ ·æœ¬å‘é‡çš„æ¨¡é•¿    sqrt()å‡½æ•°æ˜¯å¹³æ–¹æ ¹å‡½æ•°
 **********************************************************************/
 double vlen(Sample& s)
-{//ÇóÒ»¸öÏòÁ¿Ä£³¤
+{//æ±‚ä¸€ä¸ªå‘é‡æ¨¡é•¿
 	double a = 0.0;
 	int i;
 	for (i = 0; i < s.dim; ++i)
@@ -279,9 +279,9 @@ double vlen(Sample& s)
 }
 
 /**************************************************************************
-*	ÊôĞÔµÄ¹éÒ»»¯
-*	ÊäÈë vector<Sample*>& samples
-*	Êä³ö ¹éÒ»»¯µÄsamples
+*	å±æ€§çš„å½’ä¸€åŒ–
+*	è¾“å…¥ vector<Sample*>& samples
+*	è¾“å‡º å½’ä¸€åŒ–çš„samples
 ***************************************************************************/
 void vec_normalization()
 {
@@ -292,7 +292,7 @@ void vec_normalization()
 	size_t i;
 	int j;
 	for (j = 0; j < samples[0]->dim; ++j)
-	{// ÕÒÑù±¾ÖĞÃ¿Î¬µÄ×î´óÖµºÍ×îĞ¡Öµ
+	{// æ‰¾æ ·æœ¬ä¸­æ¯ç»´çš„æœ€å¤§å€¼å’Œæœ€å°å€¼
 		if (samples[0]->x[j] < samples[1]->x[j])
 		{
 			min_val = samples[0]->x[j];
@@ -304,7 +304,7 @@ void vec_normalization()
 			max_val = samples[0]->x[j];
 		}
 
-		for (i = 2; i < 2 * (samples.size() / 2); i += 2)   //´Ë´¦ÓÃ  2*£¨a/2)µÄ×÷ÓÃÊÇ£¬Ïû³ı£¨i+2£©»á³öÏÖÔ½½çµÄÇé¿ö
+		for (i = 2; i < 2 * (samples.size() / 2); i += 2)   //æ­¤å¤„ç”¨  2*ï¼ˆa/2)çš„ä½œç”¨æ˜¯ï¼Œæ¶ˆé™¤ï¼ˆi+2ï¼‰ä¼šå‡ºç°è¶Šç•Œçš„æƒ…å†µ
 		{
 			if (samples[i]->x[j] < samples[i + 1]->x[j])
 			{
@@ -329,7 +329,7 @@ void vec_normalization()
 				}
 			}
 		}//for
-		if (samples.size() % 2 != 0)   //¼ì²éÑù±¾¸öÊıÊÇ·ñÎªÆæÊı£¬ÒªÊÇÎªÆæÊıµÄ»°£¬»¹µÃºÍ×îºóÒ»¸öÃ»ÓĞ´¦ÀíµÄÑù±¾½øĞĞ±È½Ï
+		if (samples.size() % 2 != 0)   //æ£€æŸ¥æ ·æœ¬ä¸ªæ•°æ˜¯å¦ä¸ºå¥‡æ•°ï¼Œè¦æ˜¯ä¸ºå¥‡æ•°çš„è¯ï¼Œè¿˜å¾—å’Œæœ€åä¸€ä¸ªæ²¡æœ‰å¤„ç†çš„æ ·æœ¬è¿›è¡Œæ¯”è¾ƒ
 		{
 			if (min_val > samples[samples.size() - 1]->x[j])
 			{
@@ -344,7 +344,7 @@ void vec_normalization()
 		vec_min.push_back(min_val);
 	}
 
-	//¹éÒ»»¯
+	//å½’ä¸€åŒ–
 	for (j = 0; j < samples[0]->dim; ++j)
 	{
 		for (size_t i = 0; i < samples.size(); ++i)
@@ -358,29 +358,29 @@ void vec_normalization()
 }
 
 /*********************************************************************
-*	½«Ñù±¾Í¶Éäµ½ÇòÃæ £¬²¢½øĞĞ¹éÒ»»¯´¦Àí
+*	å°†æ ·æœ¬æŠ•å°„åˆ°çƒé¢ ï¼Œå¹¶è¿›è¡Œå½’ä¸€åŒ–å¤„ç†
 **********************************************************************/
 void projectToSphere()
 {
 	size_t i;
 	double d = vlen(*samples[0]);
 	for (i = 1; i < samples.size(); ++i)
-	{//ÕÒ×î´óÄ£³¤µÄÏòÁ¿³¤¶Èd
+	{//æ‰¾æœ€å¤§æ¨¡é•¿çš„å‘é‡é•¿åº¦d
 		double t = vlen(*samples[i]);
 		if (d < t)
 			d = t;
 	}
 	for (i = 0; i < samples.size(); ++i)
-	{//Ôö¼ÓÒ»Î¬£¬Ó³Éäµ½ÇòÃæ
+	{//å¢åŠ ä¸€ç»´ï¼Œæ˜ å°„åˆ°çƒé¢
 		double x = vlen(*samples[i]);
 		double t = d*d - x*x;
 		t = sqrt(t);
-		samples[i]->x.push_back(t); //Ôö¼ÓÒ»Î¬
+		samples[i]->x.push_back(t); //å¢åŠ ä¸€ç»´
 		samples[i]->dim += 1;
 	}
 
 	for (i = 0; i < samples.size(); ++i)
-	{//¹éÒ»»¯´¦Àí
+	{//å½’ä¸€åŒ–å¤„ç†
 		double x = vlen(*samples[i]);
 		for (int k = 0; k < samples[i]->dim; ++k)
 		{
@@ -390,13 +390,13 @@ void projectToSphere()
 }
 
 /*********************************************************************
-*	ÇóÁ½¸öÑù±¾Ö®¼äµÄÅ·ÊÏ¾àÀë
+*	æ±‚ä¸¤ä¸ªæ ·æœ¬ä¹‹é—´çš„æ¬§æ°è·ç¦»
 **********************************************************************/
 double inner_product(Sample& s1, Sample& s2)
-{//ÇóÅ·ÊÏ¾àÀë 
+{//æ±‚æ¬§æ°è·ç¦» 
 	if (s1.dim != s2.dim)
 	{
-		cout << "s1,s2Î¬¶È²»ÏàµÈ£¡" << endl;
+		cout << "s1,s2ç»´åº¦ä¸ç›¸ç­‰ï¼" << endl;
 		return 0.0;
 	}
 	double a = 0.0;
@@ -409,17 +409,17 @@ double inner_product(Sample& s1, Sample& s2)
 	return  sqrt(a);
 }
 /*********************************************************************
-	ÇóÁ½¸öÑù±¾Ö®¼äµÄÅ·ÊÏ¾àÀë
-    ÔÚ»®·ÖºÃµÄÊôĞÔ²ãÉÏ½øĞĞ¼ÆËã Ñù±¾Ö®¼äµÄÅ·Ê½¾àÀë
+	æ±‚ä¸¤ä¸ªæ ·æœ¬ä¹‹é—´çš„æ¬§æ°è·ç¦»
+    åœ¨åˆ’åˆ†å¥½çš„å±æ€§å±‚ä¸Šè¿›è¡Œè®¡ç®— æ ·æœ¬ä¹‹é—´çš„æ¬§å¼è·ç¦»
 **********************************************************************/
 double inner_product_subset(Sample& s1, double* x, int y,int c)
-{   //ÔÚÊôĞÔ×Ó¼¯µÄ·¶Î§ÄÚ
-	//¼ÆËãÁ½¸öÑù±¾Ö®¼äµÄÅ·Ê½¾àÀë
+{   //åœ¨å±æ€§å­é›†çš„èŒƒå›´å†…
+	//è®¡ç®—ä¸¤ä¸ªæ ·æœ¬ä¹‹é—´çš„æ¬§å¼è·ç¦»
 	
 	double a = 0.0;
 	if (c == 0)
 	{
-		int t = (sizeof(SubSet_POS[y]) / sizeof(int));  // ¼ÆËãSutSetÊı×éÓĞ¶àÉÙÁĞ
+		int t = (sizeof(SubSet_POS[y]) / sizeof(int));  // è®¡ç®—SutSetæ•°ç»„æœ‰å¤šå°‘åˆ—
 		for (int j = 0; j < s1.dim; j++)
 		{
 			int flag = 0;
@@ -435,7 +435,7 @@ double inner_product_subset(Sample& s1, double* x, int y,int c)
 	}
 	if (c == 1)
 	{
-		int t = (sizeof(SubSet_NEG[y]) / sizeof(int));  // ¼ÆËãSutSetÊı×éÓĞ¶àÉÙÁĞ
+		int t = (sizeof(SubSet_NEG[y]) / sizeof(int));  // è®¡ç®—SutSetæ•°ç»„æœ‰å¤šå°‘åˆ—
 		for (int j = 0; j < s1.dim; j++)
 		{
 			int flag = 0;
@@ -452,10 +452,10 @@ double inner_product_subset(Sample& s1, double* x, int y,int c)
 	return sqrt(a);
 }
 /*********************************************************************
-*		ÇóÑù±¾s1ºÍÊı×éxµÄÅ·ÊÏ¾àÀë
+*		æ±‚æ ·æœ¬s1å’Œæ•°ç»„xçš„æ¬§æ°è·ç¦»
 **********************************************************************/
 double inner_product_x(Sample& s1, double* x)
-{//ÇóÅ·ÊÏ¾àÀë
+{//æ±‚æ¬§æ°è·ç¦»
 	
 	double a = 0.0;
 	for (int i = 0; i < s1.dim; ++i)
@@ -470,10 +470,10 @@ double inner_product_x(Sample& s1, double* x)
 }
 
 /*********************************************************************
-*		ÇóÏòÁ¿x1ºÍÏòÁ¿x2µÄÅ·ÊÏ¾àÀë
+*		æ±‚å‘é‡x1å’Œå‘é‡x2çš„æ¬§æ°è·ç¦»
 **********************************************************************/
 double inner_product(double* x1, double* x2, int dim)
-{//ÇóÅ·ÊÏ¾àÀë 
+{//æ±‚æ¬§æ°è·ç¦» 
 	double a = 0.0;
 	for (int i = 0; i < dim; ++i)
 	{
@@ -482,22 +482,22 @@ double inner_product(double* x1, double* x2, int dim)
 	return sqrt(a);
 }
 /*********************************************************************
-*	ÇóµÚtÀàÑù±¾ÖĞsµã¾àÒìÀàµã×î½üÖµ£¨×îĞ¡Å·ÊÏ¾àÀë£©£¬sÊÇËùÇóµãËùÔÚ×Ó¼¯id
+*	æ±‚ç¬¬tç±»æ ·æœ¬ä¸­sç‚¹è·å¼‚ç±»ç‚¹æœ€è¿‘å€¼ï¼ˆæœ€å°æ¬§æ°è·ç¦»ï¼‰ï¼Œsæ˜¯æ‰€æ±‚ç‚¹æ‰€åœ¨å­é›†id
 **********************************************************************/
 double find_diffMin_d(int s, int t)                                                                                                    
 {
-	int t1 = (t + 1) % I.size();  //t1±íÊ¾£¨t+1)ÀàÑù±¾×Ó¼¯£¨SampleSubSet)
-	int k = I[t1]->v[0]->id;  //k±íÊ¾µÄÊÇ£º£¨t+1)Àà->Ñù±¾->ĞòºÅ   ´Ë´¦Ñù±¾ÊÇ´Ó0¿ªÊ¼µÄ
-	int a = I[t]->v[s]->id;   //a±íÊ¾µÄÊÇ tÀà->sÑù±¾->ĞòºÅ
+	int t1 = (t + 1) % I.size();  //t1è¡¨ç¤ºï¼ˆt+1)ç±»æ ·æœ¬å­é›†ï¼ˆSampleSubSet)
+	int k = I[t1]->v[0]->id;  //kè¡¨ç¤ºçš„æ˜¯ï¼šï¼ˆt+1)ç±»->æ ·æœ¬->åºå·   æ­¤å¤„æ ·æœ¬æ˜¯ä»0å¼€å§‹çš„
+	int a = I[t]->v[s]->id;   //aè¡¨ç¤ºçš„æ˜¯ tç±»->sæ ·æœ¬->åºå·
 
-	double diffMin_d = inner_product(*samples[a], *samples[k]);  //½«tÀàÖĞsÑù±¾ÓëÆäËûÀàÖĞµÄÑù±¾£¨Ëæ»úÑ¡È¡£©¼ÆËãÁË¶şÕßµÄÅ·ÊÏ¾àÀë£¬×÷Îª×î³õµÄdiffMin_dÖµ
+	double diffMin_d = inner_product(*samples[a], *samples[k]);  //å°†tç±»ä¸­sæ ·æœ¬ä¸å…¶ä»–ç±»ä¸­çš„æ ·æœ¬ï¼ˆéšæœºé€‰å–ï¼‰è®¡ç®—äº†äºŒè€…çš„æ¬§æ°è·ç¦»ï¼Œä½œä¸ºæœ€åˆçš„diffMin_då€¼
 	for (size_t i = 0; i < I.size(); ++i)
 	{
 		if ((int)i != t)
 		{
 			for (size_t j = 0; j < I[i]->v.size(); ++j)
 			{
-				k = I[i]->v[j]->id; //Êµ¼Êid
+				k = I[i]->v[j]->id; //å®é™…id
 				double x = inner_product(*samples[a], *samples[k]);
 				if (x < diffMin_d)
 				{
@@ -510,15 +510,15 @@ double find_diffMin_d(int s, int t)
 }
 
 /*********************************************************************
-*	ÇóµÚtÀàÑù±¾ÖĞsµã¾àÍ¬Àà×îÔ¶¾àÀë£¨×î´óÅ·ÊÏ¾àÀë£©£¬sÊÇËùÇóµãËùÔÚ×Ó¼¯id
+*	æ±‚ç¬¬tç±»æ ·æœ¬ä¸­sç‚¹è·åŒç±»æœ€è¿œè·ç¦»ï¼ˆæœ€å¤§æ¬§æ°è·ç¦»ï¼‰ï¼Œsæ˜¯æ‰€æ±‚ç‚¹æ‰€åœ¨å­é›†id
 **********************************************************************/
-double find_SameMax_d(int s, int t, double diffMin_d)   //ÇóµÄÕâ¸öÍ¬ÀàÖĞ×î´ó¾àÀë£¬Ò»¶¨Òª±ÈÒìÀàÖĞµÄ×îĞ¡¾àÀëĞ¡²Å·ûºÏ
+double find_SameMax_d(int s, int t, double diffMin_d)   //æ±‚çš„è¿™ä¸ªåŒç±»ä¸­æœ€å¤§è·ç¦»ï¼Œä¸€å®šè¦æ¯”å¼‚ç±»ä¸­çš„æœ€å°è·ç¦»å°æ‰ç¬¦åˆ
 {
-	int a = I[t]->v[s]->id; //Ô­µãÊµ¼ÊidºÅ
-	double sameMax_d = 0;//ºÍÔËÓÃÄÚ»ı¼ÆËãÖ®¼äµÄ²î±ğÔÚ´Ë 
+	int a = I[t]->v[s]->id; //åŸç‚¹å®é™…idå·
+	double sameMax_d = 0;//å’Œè¿ç”¨å†…ç§¯è®¡ç®—ä¹‹é—´çš„å·®åˆ«åœ¨æ­¤ 
 	for (size_t j = 0; j < I[t]->v.size(); ++j)
 	{
-		int k = I[t]->v[j]->id; //Êµ¼ÊidºÅ
+		int k = I[t]->v[j]->id; //å®é™…idå·
 		double x = inner_product(*samples[a], *samples[k]);
 		if (x < diffMin_d)
 		{
@@ -534,8 +534,8 @@ double find_SameMax_d(int s, int t, double diffMin_d)   //ÇóµÄÕâ¸öÍ¬ÀàÖĞ×î´ó¾àÀë
 }
 
 /*********************************************************************
-*	¸ù¾İÖĞĞÄµãs£¬Ñù±¾Àà±ğºÅt£¬¸²¸Ç°ë¾¶d£¬×ö¸²¸Ç£¬²¢·µ»Ø¸²¸ÇµÄµãÊı£¬
-*	º¯ÊıÖ´ĞĞ¹ı³ÌÖĞĞŞ¸ÄÑù±¾×Ó¼¯ÖĞÑù±¾ºÅµÄcoveredÊôĞÔ£¬ÒÔ±êÃ÷±»¸²¸Ç
+*	æ ¹æ®ä¸­å¿ƒç‚¹sï¼Œæ ·æœ¬ç±»åˆ«å·tï¼Œè¦†ç›–åŠå¾„dï¼Œåšè¦†ç›–ï¼Œå¹¶è¿”å›è¦†ç›–çš„ç‚¹æ•°ï¼Œ
+*	å‡½æ•°æ‰§è¡Œè¿‡ç¨‹ä¸­ä¿®æ”¹æ ·æœ¬å­é›†ä¸­æ ·æœ¬å·çš„coveredå±æ€§ï¼Œä»¥æ ‡æ˜è¢«è¦†ç›–
 **********************************************************************/
 int cover_sample(int s, int t, double d, Cover *c)
 {
@@ -545,9 +545,9 @@ int cover_sample(int s, int t, double d, Cover *c)
 	//int j = 0;
 	for (size_t i = 0; i < I[t]->v.size(); ++i)
 	{
-		int k = I[t]->v[i]->id; //Êµ¼Êid
+		int k = I[t]->v[i]->id; //å®é™…id
 		if (k == a)
-		{//Ô²ĞÄ±¾Éí
+		{//åœ†å¿ƒæœ¬èº«
 			I[t]->v[i]->covered = 1;
 			++cov_num;
 			c->sid[cov_num - 1] = k;
@@ -560,39 +560,39 @@ int cover_sample(int s, int t, double d, Cover *c)
 			c->sid[cov_num - 1] = k;
 		}
 	}
-	return cov_num; //·µ»Ø¸²¸ÇµÄÑù±¾Êı
+	return cov_num; //è¿”å›è¦†ç›–çš„æ ·æœ¬æ•°
 }
 
 /*********************************************************************
-*	ÑµÁ·Íê³Éºó½«¸²¸ÇµÄ½á¹û±£´æ³ÉÎÄ¼ş£¬ÎÄ¼şÃûÎª model_file
+*	è®­ç»ƒå®Œæˆåå°†è¦†ç›–çš„ç»“æœä¿å­˜æˆæ–‡ä»¶ï¼Œæ–‡ä»¶åä¸º model_file
 **********************************************************************/
 void save_model_to_file(const string& model_file)
 {
 	if (model_file == "")
 	{
-		cout << "Ä£ĞÍÎÄ¼ş²»ÄÜÎª¿Õ!" << endl;
+		cout << "æ¨¡å‹æ–‡ä»¶ä¸èƒ½ä¸ºç©º!" << endl;
 		getchar();
 		exit(0);
 	}
 	ofstream ofs(model_file.c_str(), ios::out);
 	if (!ofs == NULL)
 	{
-		cout << "´´½¨Ä£ĞÍÎÄ¼şÊ§°Ü!" << endl;
+		cout << "åˆ›å»ºæ¨¡å‹æ–‡ä»¶å¤±è´¥!" << endl;
 		getchar();
 		exit(0);
 	}
 	int dim = samples[0]->dim;
-	//¿ªÊ¼Ğ´ÎÄ¼ş
-	ofs << C.size() << endl;					//Ğ´Èë¸²¸ÇÊı
-	ofs << dim << endl;						//Ğ´Èë¸²¸ÇÎ¬¶È£¬¼´Ñù±¾Í¶ÉäºóµÄÎ¬¶È
-	ofs.precision(10);						//¾­²âÊÔ£¬¾«¶ÈÌ«Ğ¡£¬±£´æµÄÄ£ĞÍ»áÓĞÎó²î£¬Í¬Ñù±¾ÔÙ²âÊÔÊ±»áÓĞ¾ÜÊ¶ÏÖÏó
+	//å¼€å§‹å†™æ–‡ä»¶
+	ofs << C.size() << endl;					//å†™å…¥è¦†ç›–æ•°
+	ofs << dim << endl;						//å†™å…¥è¦†ç›–ç»´åº¦ï¼Œå³æ ·æœ¬æŠ•å°„åçš„ç»´åº¦
+	ofs.precision(10);						//ç»æµ‹è¯•ï¼Œç²¾åº¦å¤ªå°ï¼Œä¿å­˜çš„æ¨¡å‹ä¼šæœ‰è¯¯å·®ï¼ŒåŒæ ·æœ¬å†æµ‹è¯•æ—¶ä¼šæœ‰æ‹’è¯†ç°è±¡
 	for (size_t i = 0; i < C.size(); ++i)
 	{
-		ofs << C[i]->seq << ","			//Ğ´Èë¸²¸ÇĞòºÅ
-			<< C[i]->cls << ","			//Ğ´Èë¸²¸ÇÀà±ğ
-			<< C[i]->r << ",";			//Ğ´Èë¸²¸Ç°ë¾¶
+		ofs << C[i]->seq << ","			//å†™å…¥è¦†ç›–åºå·
+			<< C[i]->cls << ","			//å†™å…¥è¦†ç›–ç±»åˆ«
+			<< C[i]->r << ",";			//å†™å…¥è¦†ç›–åŠå¾„
 		ofs << "\t\t\t\t";
-		for (int k = 0; k < dim; ++k)		//Ñ­»·Ğ´Èë¸²¸ÇÔ²ĞÄ
+		for (int k = 0; k < dim; ++k)		//å¾ªç¯å†™å…¥è¦†ç›–åœ†å¿ƒ
 		{
 			ofs << fixed << C[i]->center[k] << ", ";
 		}
@@ -602,29 +602,29 @@ void save_model_to_file(const string& model_file)
 }
 
 /*********************************************************************
-*	´ÓÎÄ¼şÖĞ¶ÁÈ¡ÑµÁ·¹ıµÄ¸²¸ÇÊı¾İ£¬ ÎÄ¼şÃûÎª model_file
+*	ä»æ–‡ä»¶ä¸­è¯»å–è®­ç»ƒè¿‡çš„è¦†ç›–æ•°æ®ï¼Œ æ–‡ä»¶åä¸º model_file
 **********************************************************************/
 void load_model_from_file(const string& model_file)
 {
 	if (model_file == "")
 	{
-		cout << "Ä£ĞÍÎÄ¼ş²»ÄÜÎª¿Õ!" << endl;
+		cout << "æ¨¡å‹æ–‡ä»¶ä¸èƒ½ä¸ºç©º!" << endl;
 		getchar();
 		exit(0);
 	}
 	ifstream ifs(model_file.c_str(), ios::in);
 	if (!ifs == NULL)
 	{
-		cout << "´ò¿ªÄ£ĞÍÎÄ¼şÊ§°Ü!" << endl;
+		cout << "æ‰“å¼€æ¨¡å‹æ–‡ä»¶å¤±è´¥!" << endl;
 		getchar();
 		exit(0);
 	}
 	int covnum = 0;
 	int dim = 0;
 	string line;
-	//¶ÁÈ¡¸²¸ÇÊı¾İ
-	ifs >> covnum;	//¶ÁÈ¡¸²¸ÇÊıÄ¿
-	ifs >> dim;		//¶ÁÈ¡¸²¸ÇÎ¬¶È
+	//è¯»å–è¦†ç›–æ•°æ®
+	ifs >> covnum;	//è¯»å–è¦†ç›–æ•°ç›®
+	ifs >> dim;		//è¯»å–è¦†ç›–ç»´åº¦
 	getline(ifs, line);
 	for (int i = 0; i < covnum; ++i)
 	{
@@ -635,9 +635,9 @@ void load_model_from_file(const string& model_file)
 		getline(ifs, line);
 		split(line, ',', vec_str);
 
-		c->seq = atoi(vec_str[0].c_str());	//¸²¸ÇĞòºÅ
-		c->cls = atoi(vec_str[1].c_str());	//¸²¸ÇÀà±ğ
-		c->r = atof(vec_str[2].c_str());	//¸²¸Ç°ë¾¶
+		c->seq = atoi(vec_str[0].c_str());	//è¦†ç›–åºå·
+		c->cls = atoi(vec_str[1].c_str());	//è¦†ç›–ç±»åˆ«
+		c->r = atof(vec_str[2].c_str());	//è¦†ç›–åŠå¾„
 
 		for (int k = 0; k < dim; ++k)
 		{
@@ -648,14 +648,14 @@ void load_model_from_file(const string& model_file)
 	ifs.close();
 }
 
-//¸ù¾İ¸²¸ÇÖĞµÄÑù±¾Êı¶Ô¸²¸Ç½øĞĞÅÅĞò 
-void sortCover(Cover * cover, int N)  // Ã°ÅİÅÅĞòËã·¨
+//æ ¹æ®è¦†ç›–ä¸­çš„æ ·æœ¬æ•°å¯¹è¦†ç›–è¿›è¡Œæ’åº 
+void sortCover(Cover * cover, int N)  // å†’æ³¡æ’åºç®—æ³•
 {
 	int x, y;
 	Cover temp;
 	for (y = 0; y < N - 1; y++)
 	{
-		for (x = 1; x<N - y; x++)  //ÕâÀï²»ÊÇÓ¦¸Ã¶Ôx½øĞĞ++Ã´£¿ÎªÉ¶±ä³Éy++ÁË
+		for (x = 1; x<N - y; x++)  //è¿™é‡Œä¸æ˜¯åº”è¯¥å¯¹xè¿›è¡Œ++ä¹ˆï¼Ÿä¸ºå•¥å˜æˆy++äº†
 		{
 			if (cover[x].ybs>cover[x - 1].ybs)
 			{
@@ -669,14 +669,14 @@ void sortCover(Cover * cover, int N)  // Ã°ÅİÅÅĞòËã·¨
 
 
 /*********************************************************************
-*	Ñù±¾ÑµÁ·º¯Êı
+*	æ ·æœ¬è®­ç»ƒå‡½æ•°
 **********************************************************************/
 void sample_train(double a, double b)
-{//Çó¸²¸Ç
+{//æ±‚è¦†ç›–
 	clock_t t1;
 
 	t1 = clock();
-	sortSample();	//¸øÑù±¾°´Àà±ğÅÅĞò
+	sortSample();	//ç»™æ ·æœ¬æŒ‰ç±»åˆ«æ’åº
 	int seq = 0;
 	int coved_num = 0;
 	//srand((unsigned)time(NULL));
@@ -684,7 +684,7 @@ void sample_train(double a, double b)
 	{
 		vector<int> v;
 		for (size_t i = 0; i < I[t]->v.size(); ++i)
-			v.push_back(i);  //ÔÚÒ»¸öÁÙÊ±µÄ¼¯ºÏvÉÏ²Ù×÷
+			v.push_back(i);  //åœ¨ä¸€ä¸ªä¸´æ—¶çš„é›†åˆvä¸Šæ“ä½œ
 		int uncovedn = I[t]->v.size();
 		while (!v.empty())
 		{
@@ -695,18 +695,18 @@ void sample_train(double a, double b)
 				v.erase(v.begin());
 				continue;
 			}
-			double d1 = find_diffMin_d(s, t); //ÕÒÒìÀà×î½üµã ÄÚ»ı×î´ó,Å·Ê½¾àÀë×îĞ¡ d1 ;
-			double d2 = find_SameMax_d(s, t, d1); //ÕÒÍ¬Àà×îÔ¶µã ÄÚ»ı×îĞ¡£¬Å·Ê½¾àÀë×î´ó d2
+			double d1 = find_diffMin_d(s, t); //æ‰¾å¼‚ç±»æœ€è¿‘ç‚¹ å†…ç§¯æœ€å¤§,æ¬§å¼è·ç¦»æœ€å° d1 ;
+			double d2 = find_SameMax_d(s, t, d1); //æ‰¾åŒç±»æœ€è¿œç‚¹ å†…ç§¯æœ€å°ï¼Œæ¬§å¼è·ç¦»æœ€å¤§ d2
 			//double d = (d1+d2)/2 ;
 			double d = d2;
 
 
 			Cover* c = new Cover;
 
-			//¸ù¾İ°ë¾¶¶ÔÑù±¾×ö¸²¸Ç±ê¼Ç
-			coved_num = cover_sample(s, t, d, c); //sÊÇÔ²ĞÄ£¬tÊÇµÚtÀàÑù±¾£¬dÊÇ¸²¸Ç°ë¾¶
+			//æ ¹æ®åŠå¾„å¯¹æ ·æœ¬åšè¦†ç›–æ ‡è®°
+			coved_num = cover_sample(s, t, d, c); //sæ˜¯åœ†å¿ƒï¼Œtæ˜¯ç¬¬tç±»æ ·æœ¬ï¼Œdæ˜¯è¦†ç›–åŠå¾„
 
-			//¹¹ÔìÒ»¸ö¸²¸Ç
+			//æ„é€ ä¸€ä¸ªè¦†ç›–
 
 			int k = I[t]->v[s]->id;
 			int dim = samples[k]->dim;
@@ -722,14 +722,14 @@ void sample_train(double a, double b)
 			c->ybs = coved_num;
 
 			if (c->cls == 0)
-				C1.push_back(c);//ÕıÀà	
+				C1.push_back(c);//æ­£ç±»	
 			else
-				C2.push_back(c);//¸ºÀà 
+				C2.push_back(c);//è´Ÿç±» 
 
 
-			//ĞŞ¸ÄÎ´¸²¸ÇÊı
+			//ä¿®æ”¹æœªè¦†ç›–æ•°
 			uncovedn -= coved_num;
-			//printf("%d\tµÚ%dÀà\t±¾´Î×Ó¸²¸Ç:%d\t¸²¸Ç°ë¾¶£º%f\n",seq,t,coved_num,d);
+			//printf("%d\tç¬¬%dç±»\tæœ¬æ¬¡å­è¦†ç›–:%d\tè¦†ç›–åŠå¾„ï¼š%f\n",seq,t,coved_num,d);
 			seq++;
 			v.erase(v.begin());
 		}
@@ -737,20 +737,20 @@ void sample_train(double a, double b)
 
 	}//for
 
-	//¶ÔC1,C2½øĞĞÅÅĞò 
+	//å¯¹C1,C2è¿›è¡Œæ’åº 
 	//sortCover(C1[0],C1.size());
 	//sortCover(C2[0],C2.size());
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	//½«C1ÀàºÍC2Àà½øĞĞ´¦Àí£¬¸ù¾İa,bÖµ½øĞĞÊÍ·Å¡££¨a,b£© ;//ÖØĞÂĞÎ³É¸²¸Ç¼¯C3,C4 
+	//å°†C1ç±»å’ŒC2ç±»è¿›è¡Œå¤„ç†ï¼Œæ ¹æ®a,bå€¼è¿›è¡Œé‡Šæ”¾ã€‚ï¼ˆa,bï¼‰ ;//é‡æ–°å½¢æˆè¦†ç›–é›†C3,C4 
 	//int i;
 	//for(i=0;i<C1.size()*(1-a);i++)
 	//C3.push_back(C1[i]);
 	//for(i=0;i<C2.size()*(1-b);i++)
 	//C4.push_back(C2[i]);
 	//
-	////´æÈëCÖĞ 
+	////å­˜å…¥Cä¸­ 
 	//for(i=0;i<C3.size();i++)
 	//C.push_back(C3[i]);
 	//for(i=0;i<C4.size();i++)
@@ -759,10 +759,10 @@ void sample_train(double a, double b)
 	//
 	//	t2 = clock() ;
 	//cout<<" T="<<(t2-t1)/CLOCKS_PER_SEC;
-	//	//´æ´¢ÊµÑéÊı¾İ
+	//	//å­˜å‚¨å®éªŒæ•°æ®
 	//	vector<ExpResult*>::reverse_iterator it = Result.rbegin() ;
-	//	(*it)->covNum = C.size() ; //¸²¸ÇÊı
-	//	(*it)->trNum = samples.size() ; //ÑµÁ·Ñù±¾Êı
+	//	(*it)->covNum = C.size() ; //è¦†ç›–æ•°
+	//	(*it)->trNum = samples.size() ; //è®­ç»ƒæ ·æœ¬æ•°
 	//	(*it)->trTime = (double)(t2-t1)/CLOCKS_PER_SEC ;
 	//	(*it)->C0N= C3.size();
 	//	(*it)->C1N= C4.size();
@@ -778,15 +778,15 @@ void sample_train(double a, double b)
 
 
 /*********************************************************************
-*	Ñù±¾²âÊÔº¯Êı
+*	æ ·æœ¬æµ‹è¯•å‡½æ•°
 **********************************************************************/
 void sample_test()
-{//²âÊÔ
+{//æµ‹è¯•
 	//int a[6] = { 0 };
 	int a0 = 0, a1 = 0, a2 = 0, a3 = 0, a4 = 0, a5 = 0;
-	int correct = 0;		//¿ÉÊ¶±ğÇÒÕıÈ··ÖÀàÊı
-	int refuse = 0;		//¾ÜÊ¶Ñù±¾Êı
-	int uc = 0;			//Ñù±¾¾ÜÊ¶Ê±¸ù¾İÀë¸²¸Ç×î½ü À´»®·ÖÑù±¾Àà±ğµÄÇé¿öÏÂ ÄÜÕıÈ··ÖÀàÊı
+	int correct = 0;		//å¯è¯†åˆ«ä¸”æ­£ç¡®åˆ†ç±»æ•°
+	int refuse = 0;		//æ‹’è¯†æ ·æœ¬æ•°
+	int uc = 0;			//æ ·æœ¬æ‹’è¯†æ—¶æ ¹æ®ç¦»è¦†ç›–æœ€è¿‘ æ¥åˆ’åˆ†æ ·æœ¬ç±»åˆ«çš„æƒ…å†µä¸‹ èƒ½æ­£ç¡®åˆ†ç±»æ•°
 	int total_BND = 0;
 	int total_correct_BND = 0;
 	double correct_index = 0.0;
@@ -794,16 +794,16 @@ void sample_test()
 	//t1 = clock();
 
 	for (size_t i = 0; i < BND_sample_id.size(); ++i)
-	{//¶ÔÓÚ±ß½çÓòÑù±¾²âÊÔ£¬ÄÜ·ñÕıÈ·²âÊÔ
+	{//å¯¹äºè¾¹ç•ŒåŸŸæ ·æœ¬æµ‹è¯•ï¼Œèƒ½å¦æ­£ç¡®æµ‹è¯•
 
-		double cnt_nearest = DBL_MAX; //ÖĞĞÄ×î½üµã
+		double cnt_nearest = DBL_MAX; //ä¸­å¿ƒæœ€è¿‘ç‚¹
 		//double cnt_nearest1=DBL_MAX;
-		int k = -1; //¼ÇÂ¼ÖĞĞÄ×î½üµãµÄ¸²¸ÇµÄÏÂ±ê
+		int k = -1; //è®°å½•ä¸­å¿ƒæœ€è¿‘ç‚¹çš„è¦†ç›–çš„ä¸‹æ ‡
 		//int k1= -1;
 		size_t j = 0;
 
 		while (j<C1.size())
-		{//Ã¿¸ö¸²¸Ç
+		{//æ¯ä¸ªè¦†ç›–
 			
 			double r = C1[j]->r;
 
@@ -835,30 +835,30 @@ void sample_test()
 
 
 		if (cnt_nearest > 0)
-		{//´Ëµã¾à×î½üµÄµÄ¸²¸Ç¶¼ÔÚ°ë¾¶Ö®Íâ£¬ÔòÎª¾ÜÊ¶Ñù±¾µã
+		{//æ­¤ç‚¹è·æœ€è¿‘çš„çš„è¦†ç›–éƒ½åœ¨åŠå¾„ä¹‹å¤–ï¼Œåˆ™ä¸ºæ‹’è¯†æ ·æœ¬ç‚¹
 			++refuse;
-			if (samples[BND_sample_id[i]]->y == C1[k]->cls) //¸ù¾İ¾àÀë¸²¸ÇÖĞĞÄ×î½üÀ´¸ø¾ÜÊ¶Ñù±¾»®·Ö
+			if (samples[BND_sample_id[i]]->y == C1[k]->cls) //æ ¹æ®è·ç¦»è¦†ç›–ä¸­å¿ƒæœ€è¿‘æ¥ç»™æ‹’è¯†æ ·æœ¬åˆ’åˆ†
 				++uc;
 			if (samples[BND_sample_id[i]]->y == 0)
-				++a4;//++a[4];           //a4¼ÇÂ¼Ã»ÓĞ±»¸²¸ÇµÄÑù±¾Êı
+				++a4;//++a[4];           //a4è®°å½•æ²¡æœ‰è¢«è¦†ç›–çš„æ ·æœ¬æ•°
 			if (samples[BND_sample_id[i]]->y == 1)
-				++a5;//++a[5];		     //a5¼ÇÂ¼±»¸²¸ÇµÄÑù±¾Êı
+				++a5;//++a[5];		     //a5è®°å½•è¢«è¦†ç›–çš„æ ·æœ¬æ•°
 
 		}
 		else
-		{//¿ÉÊ¶Ñù±¾
+		{//å¯è¯†æ ·æœ¬
 			if (samples[BND_sample_id[i]]->y == C1[k]->cls)
 			{
 
 				++correct;
-				if (samples[BND_sample_id[i]]->y == 0)//ÕıÀà 
+				if (samples[BND_sample_id[i]]->y == 0)//æ­£ç±» 
 					++a0;//++a[0];
 				if (samples[BND_sample_id[i]]->y == 1)
 					++a1;//++a[1];
 
 			}
 			else
-			{//  ±ß½çÓò
+			{//  è¾¹ç•ŒåŸŸ
 				if (samples[BND_sample_id[i]]->y == 0)
 					++a2;//++a[2];
 				if (samples[BND_sample_id[i]]->y == 1)
@@ -877,9 +877,9 @@ void sample_test()
 
 	}
 	correct_index = a0 / total_correct_BND;
-	cout << "±ß½çÓòÖĞÑù±¾×ÜÊı£º" << total_BND << endl;
-	cout << "±ß½çÓòÖĞÑù±¾±»·Öµ½ÕıÓòÖĞ£¬ÇÒ±»ÕıÈ·»®·ÖµÄÊıÁ¿Îª£º" << a0 << endl;
-	cout << "ÕıÈ·ÂÊÎª:" << correct_index << endl;
+	cout << "è¾¹ç•ŒåŸŸä¸­æ ·æœ¬æ€»æ•°ï¼š" << total_BND << endl;
+	cout << "è¾¹ç•ŒåŸŸä¸­æ ·æœ¬è¢«åˆ†åˆ°æ­£åŸŸä¸­ï¼Œä¸”è¢«æ­£ç¡®åˆ’åˆ†çš„æ•°é‡ä¸ºï¼š" << a0 << endl;
+	cout << "æ­£ç¡®ç‡ä¸º:" << correct_index << endl;
 
 
 	
@@ -887,7 +887,7 @@ void sample_test()
 	//t2 = clock();
 	//cout << " l to l:" << a0 << "," << "l to s:" << a2 << "," << "l to B:" << a4 << "," << "s to l:" << a3 << "," << "s to s:" << a1 << "," << "s to B:" << a5 << endl;
 
-	////´æ´¢ÊµÑéÊı¾İ
+	////å­˜å‚¨å®éªŒæ•°æ®
 	//vector<ExpResult*>::reverse_iterator it = Result.rbegin();
 	//(*it)->a0 = a0;
 	//(*it)->a1 = a1;
@@ -895,8 +895,8 @@ void sample_test()
 	//(*it)->a3 = a3;
 	//(*it)->a4 = a4;
 	//(*it)->a5 = a5;
-	//(*it)->correct = correct; //²âÊÔÕıÈ·Êı
-	//(*it)->refuse = refuse; //ÑµÁ·Ñù±¾Êı
+	//(*it)->correct = correct; //æµ‹è¯•æ­£ç¡®æ•°
+	//(*it)->refuse = refuse; //è®­ç»ƒæ ·æœ¬æ•°
 	//(*it)->guess_corr = uc;
 	//(*it)->teNum = samples.size();
 	//(*it)->teTime = (double)(t2 - t1) / CLOCKS_PER_SEC;
@@ -907,18 +907,18 @@ void sample_test()
 
 
 /************************************************************************/
-/* Êä³öÕıÀà£¬¸ºÀà£¬±ß½çÓòÊı¾İ                                              */
+/* è¾“å‡ºæ­£ç±»ï¼Œè´Ÿç±»ï¼Œè¾¹ç•ŒåŸŸæ•°æ®                                              */
 /************************************************************************/
 void output_three_way_data(int bint)
 {
 	
 	
 	ofstream ofBND;
-	ofBND.open("Car±ß½çÓò.txt");
+	ofBND.open("Carè¾¹ç•ŒåŸŸ.txt");
 
-	cout << "ÕıÔÚÉú³ÉÕıÀàÊı¾İ..." << endl;
+	cout << "æ­£åœ¨ç”Ÿæˆæ­£ç±»æ•°æ®..." << endl;
 	ofstream ofPOS;
-	ofPOS.open("CarÕıÓò.txt");
+	ofPOS.open("Caræ­£åŸŸ.txt");
 	/*int sum = 0;
 	for (vector<Cover *>::iterator iter = C1.begin(); iter != (C1.end()); iter++)
 	{
@@ -942,15 +942,15 @@ void output_three_way_data(int bint)
 		{
 			int sid = (*iter)->sid[i];
 
-				// ±ß½çÀà
+				// è¾¹ç•Œç±»
 				if ((*iter)->ybs < bint)
 				{
-					//½«±ß½çÓòÖĞµÄÑù±¾ĞòºÅ±£´æÔÚ BND_sample_idÊı×éÖĞ
+					//å°†è¾¹ç•ŒåŸŸä¸­çš„æ ·æœ¬åºå·ä¿å­˜åœ¨ BND_sample_idæ•°ç»„ä¸­
 					BND_sample_id.push_back(sid);
 
-					// »ñÈ¡µ½µ¥¸öÑù±¾ÖĞ¹éÒ»»¯µÄÊı×Ö
+					// è·å–åˆ°å•ä¸ªæ ·æœ¬ä¸­å½’ä¸€åŒ–çš„æ•°å­—
 					vector<double>	x1 = samples[sid]->x;
-					//ofBND << sid << ",";        //ÕâÀïÊÇ½«Ñù±¾ĞòºÅÌí¼ÓÔÚ µÚÒ»Î»ÁË£¬µ¼ÖÂÊä³öµÄÑù±¾±ä³ÉÁË 37 Î¬
+					//ofBND << sid << ",";        //è¿™é‡Œæ˜¯å°†æ ·æœ¬åºå·æ·»åŠ åœ¨ ç¬¬ä¸€ä½äº†ï¼Œå¯¼è‡´è¾“å‡ºçš„æ ·æœ¬å˜æˆäº† 37 ç»´
 					for (int i = 0; i < (x1.size() - 1); i++)
 					{
 						ofBND << x1[i] << ",";
@@ -960,10 +960,10 @@ void output_three_way_data(int bint)
 					//(*iter)->ybs = 0;
 					//(*iter)->center = 0;
 				}
-				// ÕıÀà
+				// æ­£ç±»
 				else {
-					// »ñÈ¡µ½µ¥¸öÑù±¾ÖĞ¹éÒ»»¯µÄÊı×Ö
-					POS_sample_id.push_back(sid); //½«·Öµ½ÕıÓòµÄÑù±¾id±£´æÔÚ POS_sample_id ÖĞ
+					// è·å–åˆ°å•ä¸ªæ ·æœ¬ä¸­å½’ä¸€åŒ–çš„æ•°å­—
+					POS_sample_id.push_back(sid); //å°†åˆ†åˆ°æ­£åŸŸçš„æ ·æœ¬idä¿å­˜åœ¨ POS_sample_id ä¸­
 					//vector<double>	x2 = samples[sid]->x;
 					vector<double>	x2 = samples[sid]->x;
 					for (int i = 0; i < (x2.size() - 1); i++)
@@ -985,21 +985,21 @@ void output_three_way_data(int bint)
 	}
 	ofPOS.close();
 
-	cout << "ÕıÔÚÉú³É¸ºÀàÊı¾İ..." << endl;
+	cout << "æ­£åœ¨ç”Ÿæˆè´Ÿç±»æ•°æ®..." << endl;
 	ofstream ofNEG;
-	ofNEG.open("Car¸ºÓò.txt");
+	ofNEG.open("Carè´ŸåŸŸ.txt");
 	for (vector<Cover *>::iterator iter = C2.begin(); iter != (C2.end()); iter++)
 	{
 		for (int i = 0; i < (*iter)->ybs; i++)
 		{
 			int sid = (*iter)->sid[i];
 			
-				// ±ß½çÀà
+				// è¾¹ç•Œç±»
 				if ((*iter)->ybs < bint)
 				{
-					//½«±ß½çÓòÖĞµÄÑù±¾ĞòºÅ±£´æÔÚ BND_sample_idÊı×éÖĞ
+					//å°†è¾¹ç•ŒåŸŸä¸­çš„æ ·æœ¬åºå·ä¿å­˜åœ¨ BND_sample_idæ•°ç»„ä¸­
 					BND_sample_id.push_back(sid);
-					// »ñÈ¡µ½µ¥¸öÑù±¾ÖĞ¹éÒ»»¯µÄÊı×Ö
+					// è·å–åˆ°å•ä¸ªæ ·æœ¬ä¸­å½’ä¸€åŒ–çš„æ•°å­—
 					vector<double>	x1 = samples[sid]->x;
 					//ofBND << sid << ",";
 					for (int i = 0; i < x1.size() - 1; i++){
@@ -1011,10 +1011,10 @@ void output_three_way_data(int bint)
 					//(*iter)->ybs = 0;
 					//(*iter)->center = 0;
 				}
-				// ¸ºÀà
+				// è´Ÿç±»
 				else {
-					// »ñÈ¡µ½µ¥¸öÑù±¾ÖĞ¹éÒ»»¯µÄÊı×Ö
-					NEG_sample_id.push_back(sid);   //½«¸ºÓòÖĞµÄÑù±¾id ±£´æÔÚ  NEG_sample_id ÖĞ
+					// è·å–åˆ°å•ä¸ªæ ·æœ¬ä¸­å½’ä¸€åŒ–çš„æ•°å­—
+					NEG_sample_id.push_back(sid);   //å°†è´ŸåŸŸä¸­çš„æ ·æœ¬id ä¿å­˜åœ¨  NEG_sample_id ä¸­
 					vector<double>	x2 = samples[sid]->x;
 					for (int i = 0; i < x2.size() - 1; i++)
 					{
@@ -1035,7 +1035,7 @@ void output_three_way_data(int bint)
 	}
 	ofNEG.close();
 
-	cout << "ÕıÔÚÉú³É±ß½çÀàÊı¾İ..." << endl;
+	cout << "æ­£åœ¨ç”Ÿæˆè¾¹ç•Œç±»æ•°æ®..." << endl;
 
 	//for (size_t i = 0; i < I.size() - 1; ++i){ 
 
@@ -1043,7 +1043,7 @@ void output_three_way_data(int bint)
 
 	//	for (vector<SampleTag*>::iterator iter = st.begin(); iter != (st.end() - 1); iter++)
 	//	{
-	//		// ±ß½çÓòÊı¾İ
+	//		// è¾¹ç•ŒåŸŸæ•°æ®
 	//		if ((*iter)->covered == 0)
 	//		{
 	//			vector<double>	xx = samples[(*iter)->id]->x;
@@ -1063,18 +1063,18 @@ void output_three_way_data(int bint)
 }
 
 /*
- ±ß½çÓòÑù±¾ »®·ÖÀà±ğº¯Êı
- ÔÚ BND_test()ÖĞÖ±½Óµ÷ÓÃ
+ è¾¹ç•ŒåŸŸæ ·æœ¬ åˆ’åˆ†ç±»åˆ«å‡½æ•°
+ åœ¨ BND_test()ä¸­ç›´æ¥è°ƒç”¨
 */
 int sample_test_all(Sample& s)
 {
 	size_t j1 = 0;
 	size_t j2 = 0;
-	double d1 = 0.0;  //¼ÇÂ¼±ß½çÓòÑù±¾Óë¸²¸ÇÑù±¾Ö®¼äµÄ¾àÀë£¬²¢ÇÒ±£´æ×îĞ¡¾àÀë
+	double d1 = 0.0;  //è®°å½•è¾¹ç•ŒåŸŸæ ·æœ¬ä¸è¦†ç›–æ ·æœ¬ä¹‹é—´çš„è·ç¦»ï¼Œå¹¶ä¸”ä¿å­˜æœ€å°è·ç¦»
 	double d2 = 0.0;
-	int m1 = -1;      //¼ÇÂ¼ÖĞĞÄ×î½üµãµÄ¸²¸ÇÏÂ±ê
+	int m1 = -1;      //è®°å½•ä¸­å¿ƒæœ€è¿‘ç‚¹çš„è¦†ç›–ä¸‹æ ‡
 	int m2 = -1;
-	int y = -1;        //Ñù±¾±»»®·ÖºóµÄÀà±ğ
+	int y = -1;        //æ ·æœ¬è¢«åˆ’åˆ†åçš„ç±»åˆ«
 
 
 
@@ -1143,15 +1143,15 @@ int sample_test_all(Sample& s)
 	}
 }
 
-int sample_test_sub(Sample& s,int x,int c)   //x±íÊ¾Êı×éµÄµÚ¼¸²ã   c±íÊ¾ÊôÓÚÕıÓòÊı×é²ã£¬»¹ÊÇ¸ºÓòÊı×é²ã
-{//x±íÊ¾Sub+(Sub-)µÄµÚ¼¸²ã£¬c±íÊ¾£ºÊôÓÚSub+  or ÊôÓÚSub-
+int sample_test_sub(Sample& s,int x,int c)   //xè¡¨ç¤ºæ•°ç»„çš„ç¬¬å‡ å±‚   cè¡¨ç¤ºå±äºæ­£åŸŸæ•°ç»„å±‚ï¼Œè¿˜æ˜¯è´ŸåŸŸæ•°ç»„å±‚
+{//xè¡¨ç¤ºSub+(Sub-)çš„ç¬¬å‡ å±‚ï¼Œcè¡¨ç¤ºï¼šå±äºSub+  or å±äºSub-
 	size_t j1 = 0;
 	size_t j2 = 0;
-	double d1 = 0.0;  //¼ÇÂ¼±ß½çÓòÑù±¾Óë¸²¸ÇÑù±¾Ö®¼äµÄ¾àÀë£¬²¢ÇÒ±£´æ×îĞ¡¾àÀë
+	double d1 = 0.0;  //è®°å½•è¾¹ç•ŒåŸŸæ ·æœ¬ä¸è¦†ç›–æ ·æœ¬ä¹‹é—´çš„è·ç¦»ï¼Œå¹¶ä¸”ä¿å­˜æœ€å°è·ç¦»
 	double d2 = 0.0;
-	//int m1 = -1;      //¼ÇÂ¼ÖĞĞÄ×î½üµãµÄ¸²¸ÇÏÂ±ê
+	//int m1 = -1;      //è®°å½•ä¸­å¿ƒæœ€è¿‘ç‚¹çš„è¦†ç›–ä¸‹æ ‡
 	//int m2 = -1;
-	int y = -1;        //Ñù±¾±»»®·ÖºóµÄÀà±ğ
+	int y = -1;        //æ ·æœ¬è¢«åˆ’åˆ†åçš„ç±»åˆ«
 
 	
 
@@ -1220,47 +1220,47 @@ int sample_test_sub(Sample& s,int x,int c)   //x±íÊ¾Êı×éµÄµÚ¼¸²ã   c±íÊ¾ÊôÓÚÕıÓò
 }
 
 void BND_test()
-{/*½«×îÓÅ²ã¸³Öµ¸ø È«¾Ö±äÁ¿G_lev*/
+{/*å°†æœ€ä¼˜å±‚èµ‹å€¼ç»™ å…¨å±€å˜é‡G_lev*/
 
 	/*
-	¶ÔÃ¿Ò»¸ö±ß½çÓòÑù±¾½øĞĞ È«ÊôĞÔ·ÖÀà+²ã´ÎÊôĞÔ·ÖÀà
+	å¯¹æ¯ä¸€ä¸ªè¾¹ç•ŒåŸŸæ ·æœ¬è¿›è¡Œ å…¨å±æ€§åˆ†ç±»+å±‚æ¬¡å±æ€§åˆ†ç±»
 	*/
 	//output_three_way_data(bint);
 	int a[1000] = { 0 };
 	for (size_t i = 0; i < BND_sample_id.size(); i++)
 	{
-		/*  ÔÚÈ«ÊôĞÔÌõ¼şÏÂ£¬ÅĞ¶Ï±ß½çÓòÑù±¾ÊôÓÚÄÄÒ»Àà
+		/*  åœ¨å…¨å±æ€§æ¡ä»¶ä¸‹ï¼Œåˆ¤æ–­è¾¹ç•ŒåŸŸæ ·æœ¬å±äºå“ªä¸€ç±»
 
-		y = 1ºÍ0µÄÊıÁ¿²î²»¶à£¬Óëy1,y2Ïà²î±È½ÏÃ÷ÏÔ
+		y = 1å’Œ0çš„æ•°é‡å·®ä¸å¤šï¼Œä¸y1,y2ç›¸å·®æ¯”è¾ƒæ˜æ˜¾
 		*/
 		int y = sample_test_all(*samples[BND_sample_id[i]]);
-		//cout << "Ñù±¾ĞòºÅ i= " << i << endl;
-		//cout << "--È«£º " << y << endl;
+		//cout << "æ ·æœ¬åºå· i= " << i << endl;
+		//cout << "--å…¨ï¼š " << y << endl;
 		//int a1 = 0;
 
 		for (size_t j = 0; j < (sizeof(SubSet_POS) / sizeof(int) / (sizeof(SubSet_POS[0]) / sizeof(int))); j++)
 		{
-			/*ÔÚÕıÓò»®·ÖµÄÊôĞÔÌõ¼şÏÂ£¬ÅĞ¶Ï±ß½çÓòÑù±¾ÊôÓÚÄÄÒ»Àà*/
+			/*åœ¨æ­£åŸŸåˆ’åˆ†çš„å±æ€§æ¡ä»¶ä¸‹ï¼Œåˆ¤æ–­è¾¹ç•ŒåŸŸæ ·æœ¬å±äºå“ªä¸€ç±»*/
 
 			/*for (int i = 0; i < sizeof(SubSet_POS[j]); i++)
 			cout << SubSet_POS[j][i]<<",";
 			cout << endl << "***********" << endl;*/
 
-			int y1 = sample_test_sub(*samples[BND_sample_id[i]], j, 0);  //j±íÊ¾Êı×éµÄµÚ¼¸²ã   0±íÊ¾ÔÚÕıÓòµÄÊı×é²ãÀï
+			int y1 = sample_test_sub(*samples[BND_sample_id[i]], j, 0);  //jè¡¨ç¤ºæ•°ç»„çš„ç¬¬å‡ å±‚   0è¡¨ç¤ºåœ¨æ­£åŸŸçš„æ•°ç»„å±‚é‡Œ
 
-			//cout << "--Õı£º " << y1 << ",";
+			//cout << "--æ­£ï¼š " << y1 << ",";
 			//cout << "******" << y1 << "_________" << endl;
 			/*
-			y1 »ù±¾ÉÏ¶¼Îª1£¬Ò²¾ÍÊÇÕıÓòÑ¡ÔñµÄ²ã£¬´ó¶¼½«±ß½çÓòÑù±¾»®·ÖÎª ¸ºÀà
+			y1 åŸºæœ¬ä¸Šéƒ½ä¸º1ï¼Œä¹Ÿå°±æ˜¯æ­£åŸŸé€‰æ‹©çš„å±‚ï¼Œå¤§éƒ½å°†è¾¹ç•ŒåŸŸæ ·æœ¬åˆ’åˆ†ä¸º è´Ÿç±»
 			*/
 			for (size_t k = 0; k < (sizeof(SubSet_NEG) / sizeof(int) / (sizeof(SubSet_NEG[0]) / sizeof(int))); k++)
 			{
-				/*ÔÚ¸ºÓò»®·ÖµÄÊôĞÔÌõ¼şÏÂ£¬ÅĞ¶Ï±ß½çÓòÑù±¾ÊôÓÚÄÄÒ»Àà
+				/*åœ¨è´ŸåŸŸåˆ’åˆ†çš„å±æ€§æ¡ä»¶ä¸‹ï¼Œåˆ¤æ–­è¾¹ç•ŒåŸŸæ ·æœ¬å±äºå“ªä¸€ç±»
 
-				y2»ù±¾ÉÏ¶¼Îª1£¬Ò²¾ÍÊÇ¸ºÓò»®·ÖµÄ²ã£¬´ó¶¼½«±ß½çÓòÑù±¾»®·ÖÎª ¸ºÀà
+				y2åŸºæœ¬ä¸Šéƒ½ä¸º1ï¼Œä¹Ÿå°±æ˜¯è´ŸåŸŸåˆ’åˆ†çš„å±‚ï¼Œå¤§éƒ½å°†è¾¹ç•ŒåŸŸæ ·æœ¬åˆ’åˆ†ä¸º è´Ÿç±»
 				*/
 				int y2 = sample_test_sub(*samples[BND_sample_id[i]], k, 1);
-				//cout << "--¸º£º" << y2 << ",";
+				//cout << "--è´Ÿï¼š" << y2 << ",";
 				if (y1 = y2 && samples[BND_sample_id[i]]->y == y2 || y == y1&&samples[BND_sample_id[i]]->y == y || y == y2&&samples[BND_sample_id[i]]->y == y)
 				{
 					int a1 = j*((sizeof(SubSet_NEG) / sizeof(int)) / (sizeof(SubSet_NEG[0]) / sizeof(int))) + k;
@@ -1292,36 +1292,36 @@ void BND_test()
 		}
 	}
 
-	G_lev = i_max;  //G_lev±£´æ×îÓÅ²ã×éºÏ
+	G_lev = i_max;  //G_levä¿å­˜æœ€ä¼˜å±‚ç»„åˆ
 	int count_BND = BND_sample_id.size();
 	double rate = 0.0;
 	rate = (double)max / (double)count_BND;
 	int lev_1 = G_lev / ((sizeof(SubSet_NEG) / sizeof(int)) / (sizeof(SubSet_NEG[0]) / sizeof(int)));
 	int lev_2 = G_lev % ((sizeof(SubSet_NEG) / sizeof(int)) / (sizeof(SubSet_NEG[0]) / sizeof(int)));
 
-	cout << endl << "**************************×îÓÅ²ã×éºÏ½á¹ûÈçÏÂ***********************" << endl << endl;
-	cout << "×îÓÅ²ã×éºÏĞòºÅ = " << i_max << ",Sub+ = " << lev_1 << ",Sub- = " << lev_2 << endl << endl;
-	cout << "×îÓÅ²ã×éºÏ ÕıÈ··ÖÀà¸öÊı = " << max << endl << endl;
+	cout << endl << "**************************æœ€ä¼˜å±‚ç»„åˆç»“æœå¦‚ä¸‹***********************" << endl << endl;
+	cout << "æœ€ä¼˜å±‚ç»„åˆåºå· = " << i_max << ",Sub+ = " << lev_1 << ",Sub- = " << lev_2 << endl << endl;
+	cout << "æœ€ä¼˜å±‚ç»„åˆ æ­£ç¡®åˆ†ç±»ä¸ªæ•° = " << max << endl << endl;
 
-	cout << "********************* BND_test() ÔËĞĞ½áÊø****************************" << endl << endl;
+	cout << "********************* BND_test() è¿è¡Œç»“æŸ****************************" << endl << endl;
 }
 
 void samples_test()
 {
 
-	int nc1 = 0;  //¼ÆËãÍ¨¹ı ¸²¸ÇËã·¨ ½«²âÊÔÑù±¾»®·ÖÎª ÕıÓòÇÒÕıÈ· µÄÑù±¾ÊıÁ¿
-	int nc2 = 0;  //¼ÆËãÍ¨¹ı ¸²¸ÇËã·¨ ½«²âÊÔÑù±¾»®·ÖÎª ¸ºÓòÇÒÕıÈ· µÄÑù±¾ÊıÁ¿
+	int nc1 = 0;  //è®¡ç®—é€šè¿‡ è¦†ç›–ç®—æ³• å°†æµ‹è¯•æ ·æœ¬åˆ’åˆ†ä¸º æ­£åŸŸä¸”æ­£ç¡® çš„æ ·æœ¬æ•°é‡
+	int nc2 = 0;  //è®¡ç®—é€šè¿‡ è¦†ç›–ç®—æ³• å°†æµ‹è¯•æ ·æœ¬åˆ’åˆ†ä¸º è´ŸåŸŸä¸”æ­£ç¡® çš„æ ·æœ¬æ•°é‡
 
-	int nc1_n = 0;//Í¨¹ı¸²¸ÇËã·¨£¬½«Ñù±¾»®·ÖÎª ÕıÓò£¬µ«ÊÇÓëÑù±¾±¾ÉíµÄÀà±ğ²»Í¬£¬¼´»®·Ö´íÎóµÄ¸öÊı
-	int nc2_n = 0;//Í¨¹ı¸²¸ÇËã·¨£¬½«Ñù±¾»®·ÖÎª ¸ºÓò£¬µ«ÊÇÓëÑù±¾±¾ÉíµÄÀà±ğ²»Í¬£¬¼´»®·Ö´íÎóµÄ¸öÊı
+	int nc1_n = 0;//é€šè¿‡è¦†ç›–ç®—æ³•ï¼Œå°†æ ·æœ¬åˆ’åˆ†ä¸º æ­£åŸŸï¼Œä½†æ˜¯ä¸æ ·æœ¬æœ¬èº«çš„ç±»åˆ«ä¸åŒï¼Œå³åˆ’åˆ†é”™è¯¯çš„ä¸ªæ•°
+	int nc2_n = 0;//é€šè¿‡è¦†ç›–ç®—æ³•ï¼Œå°†æ ·æœ¬åˆ’åˆ†ä¸º è´ŸåŸŸï¼Œä½†æ˜¯ä¸æ ·æœ¬æœ¬èº«çš„ç±»åˆ«ä¸åŒï¼Œå³åˆ’åˆ†é”™è¯¯çš„ä¸ªæ•°
 
 
 
 	int err = 0;
 
-	int bnd = 0;//±£´æ±ß½çÓòÑù±¾×ÜÊı£»
-	int bnd_1 = 0;//±£´æ±ß½çÓòÑù±¾ ÕıÓò¸öÊı
-	int bnd_2 = 0;//±£´æ±ß½çÓòÑù±¾ ¸ºÓò¸öÊı
+	int bnd = 0;//ä¿å­˜è¾¹ç•ŒåŸŸæ ·æœ¬æ€»æ•°ï¼›
+	int bnd_1 = 0;//ä¿å­˜è¾¹ç•ŒåŸŸæ ·æœ¬ æ­£åŸŸä¸ªæ•°
+	int bnd_2 = 0;//ä¿å­˜è¾¹ç•ŒåŸŸæ ·æœ¬ è´ŸåŸŸä¸ªæ•°
 
 	int all = 0;
 	int all_1 = 0;
@@ -1331,33 +1331,33 @@ void samples_test()
 	int sub_11 = 0;
 	int sub_12 = 0;
 
-	int sub_20 = 0; //±£´æ×îÓÅSub-²âÊÔ±ß½çÓòÑù±¾£¬ÕıÈ··ÖÀàµÄ¸öÊı
-	int sub_21 = 0;//±£´æ ÕıÀà¸öÊı
+	int sub_20 = 0; //ä¿å­˜æœ€ä¼˜Sub-æµ‹è¯•è¾¹ç•ŒåŸŸæ ·æœ¬ï¼Œæ­£ç¡®åˆ†ç±»çš„ä¸ªæ•°
+	int sub_21 = 0;//ä¿å­˜ æ­£ç±»ä¸ªæ•°
 	int sub_22 = 0;
 
-	int zuhe = 0;//±£´æ×îÓÅÊôĞÔ×éºÏ ²âÊÔ±ß½çÓòÑù±¾£¬ÕıÈ··ÖÀà¸öÊı
+	int zuhe = 0;//ä¿å­˜æœ€ä¼˜å±æ€§ç»„åˆ æµ‹è¯•è¾¹ç•ŒåŸŸæ ·æœ¬ï¼Œæ­£ç¡®åˆ†ç±»ä¸ªæ•°
 	int zuhe_1 = 0;
 	int zuhe_2 = 0;
 
-	int b_concret = 0;//ÀûÓÃÇó×îÓÅ²ãµÄ×éºÏ·½Ê½£¬¶Ô±ß½çÓòÑù±¾ÓÃ×îÓÅ²ã×éºÏ ½øĞĞ·ÖÀà
+	int b_concret = 0;//åˆ©ç”¨æ±‚æœ€ä¼˜å±‚çš„ç»„åˆæ–¹å¼ï¼Œå¯¹è¾¹ç•ŒåŸŸæ ·æœ¬ç”¨æœ€ä¼˜å±‚ç»„åˆ è¿›è¡Œåˆ†ç±»
 	int b_concret_1 = 0;
 	int b_concret_2 = 0;
 
-	int great_lev = G_lev;  //ÓÃ×îÓÅ²ã£¬¶Ô±ß½çÓòÑù±¾½øĞĞ·ÖÀà
+	int great_lev = G_lev;  //ç”¨æœ€ä¼˜å±‚ï¼Œå¯¹è¾¹ç•ŒåŸŸæ ·æœ¬è¿›è¡Œåˆ†ç±»
 	for (int i = 0; i < samples.size(); i++)
 	{
-		int flag1 = 0; // ÓÃÀ´±êÖ¾ Ñù±¾ÊÇ·ñ±» ¸²¸Ç
+		int flag1 = 0; // ç”¨æ¥æ ‡å¿— æ ·æœ¬æ˜¯å¦è¢« è¦†ç›–
 		//int flag2 = 0;
 
-		int j1 = 0; //¶ÔC1½øĞĞÑ­»·²Ù×÷
-		int j2 = 0; //¶ÔC2½øĞĞÑ­»·²Ù×÷
-		double d1 = DBL_MAX; //±£´æ Ñù±¾Óë C1¸²¸ÇÖĞĞÄ µÄ ×îĞ¡¾àÀë¾àÀë²î
-		double d2 = DBL_MAX; //±£´æ Ñù±¾Óë C2¸²¸ÇÖĞĞÄ µÄ ×îĞ¡¾àÀë¾àÀë²î
+		int j1 = 0; //å¯¹C1è¿›è¡Œå¾ªç¯æ“ä½œ
+		int j2 = 0; //å¯¹C2è¿›è¡Œå¾ªç¯æ“ä½œ
+		double d1 = DBL_MAX; //ä¿å­˜ æ ·æœ¬ä¸ C1è¦†ç›–ä¸­å¿ƒ çš„ æœ€å°è·ç¦»è·ç¦»å·®
+		double d2 = DBL_MAX; //ä¿å­˜ æ ·æœ¬ä¸ C2è¦†ç›–ä¸­å¿ƒ çš„ æœ€å°è·ç¦»è·ç¦»å·®
 
 		//int x1 = 0;
 		//int x2 = 0;
 		while (j1 < C1.size())
-		{ // ¼ÆËãÑù±¾ÔÚ C1 ¸²¸ÇÖĞµÄ×îĞ¡¾àÀë
+		{ // è®¡ç®—æ ·æœ¬åœ¨ C1 è¦†ç›–ä¸­çš„æœ€å°è·ç¦»
 			double r = C1[j1]->r;
 			if (r < 0.000001)
 			{
@@ -1424,31 +1424,31 @@ void samples_test()
 
 
 		/*
-		ÉÏÃæ C1 , C2 Ñ­»·£¬ÊÇ½«Ñù±¾½øĞĞ¶ş·ÖÀà
-		¾­¹ıÉÏÃæ·ÖÀà¹ı³Ìºó£¬ Î´¶ÔÑù±¾½øĞĞµÄÑù±¾ ½øÒ»²½·ÖÀà£¬
-		ÕâÀïÓÃ ÑµÁ·ÕÒµ½µÄ×îÓÅ²ã ¶ÔÑù±¾ ½øÒ»²½¶ş·ÖÀà
+		ä¸Šé¢ C1 , C2 å¾ªç¯ï¼Œæ˜¯å°†æ ·æœ¬è¿›è¡ŒäºŒåˆ†ç±»
+		ç»è¿‡ä¸Šé¢åˆ†ç±»è¿‡ç¨‹åï¼Œ æœªå¯¹æ ·æœ¬è¿›è¡Œçš„æ ·æœ¬ è¿›ä¸€æ­¥åˆ†ç±»ï¼Œ
+		è¿™é‡Œç”¨ è®­ç»ƒæ‰¾åˆ°çš„æœ€ä¼˜å±‚ å¯¹æ ·æœ¬ è¿›ä¸€æ­¥äºŒåˆ†ç±»
 		*/
 		if (flag1 == 0)
 		{
 			int lev_1 = great_lev / ((sizeof(SubSet_NEG) / sizeof(int)) / (sizeof(SubSet_NEG[0]) / sizeof(int)));
 			int lev_2 = great_lev % ((sizeof(SubSet_NEG) / sizeof(int)) / (sizeof(SubSet_NEG[0]) / sizeof(int)));
 
-			bnd = bnd + 1; //±£´æ±ß½çÓòÑù±¾¸öÊı
+			bnd = bnd + 1; //ä¿å­˜è¾¹ç•ŒåŸŸæ ·æœ¬ä¸ªæ•°
 			if (samples[i]->y == 0)
 			{
-				bnd_1 = bnd_1 + 1; //±ß½çÓòÑù±¾ÖĞ ÕıÓòÑù±¾¸öÊı
+				bnd_1 = bnd_1 + 1; //è¾¹ç•ŒåŸŸæ ·æœ¬ä¸­ æ­£åŸŸæ ·æœ¬ä¸ªæ•°
 			}
 			if (samples[i]->y == 1)
 			{
-				bnd_2 = bnd_2 + 1; //±ß½çÓòÑù±¾ÖĞ ¸ºÓòÑù±¾¸öÊı
+				bnd_2 = bnd_2 + 1; //è¾¹ç•ŒåŸŸæ ·æœ¬ä¸­ è´ŸåŸŸæ ·æœ¬ä¸ªæ•°
 			}
 
-			int y = sample_test_all(*samples[i]); //¸ù¾İÈ«ÊôĞÔ£¬¶ÔÑù±¾½øĞĞ·ÖÀà
-			int y1 = sample_test_sub(*samples[i], lev_1, 0);//ÓÃ×îÓÅSub+ÊôĞÔ²ã£¬¶ÔÑù±¾½øĞĞ·ÖÀà
-			int y2 = sample_test_sub(*samples[i], lev_2, 1);//ÓÃ×îÓÅSub-ÊôĞÔ²ã£¬¶ÔÑù±¾½øĞĞ·ÖÀà
+			int y = sample_test_all(*samples[i]); //æ ¹æ®å…¨å±æ€§ï¼Œå¯¹æ ·æœ¬è¿›è¡Œåˆ†ç±»
+			int y1 = sample_test_sub(*samples[i], lev_1, 0);//ç”¨æœ€ä¼˜Sub+å±æ€§å±‚ï¼Œå¯¹æ ·æœ¬è¿›è¡Œåˆ†ç±»
+			int y2 = sample_test_sub(*samples[i], lev_2, 1);//ç”¨æœ€ä¼˜Sub-å±æ€§å±‚ï¼Œå¯¹æ ·æœ¬è¿›è¡Œåˆ†ç±»
 
 			//cout << "y=" << y << ",";
-			if (y == samples[i]->y) // È«ÊôĞÔ²âÊÔ
+			if (y == samples[i]->y) // å…¨å±æ€§æµ‹è¯•
 			{
 				//cout << "y==samples[i]->,";
 				all = all + 1;
@@ -1463,7 +1463,7 @@ void samples_test()
 			}
 
 			//cout << "y1=" << y1 << ",";
-			if (y1 == samples[i]->y) //×îÓÅSub+¶Ô ±ß½çÓòÑù±¾½øĞĞ²âÊÔ
+			if (y1 == samples[i]->y) //æœ€ä¼˜Sub+å¯¹ è¾¹ç•ŒåŸŸæ ·æœ¬è¿›è¡Œæµ‹è¯•
 			{
 				//cout<<"y1=samples[i]->y,";
 				sub_10 = sub_10 + 1;
@@ -1478,7 +1478,7 @@ void samples_test()
 			}
 
 			//cout << "y2=" << y2 << ",";
-			if (y2 == samples[i]->y)//×îÓÅSub-¶Ô ±ß½çÓòÑù±¾½øĞĞ²âÊÔ
+			if (y2 == samples[i]->y)//æœ€ä¼˜Sub-å¯¹ è¾¹ç•ŒåŸŸæ ·æœ¬è¿›è¡Œæµ‹è¯•
 			{
 				//cout << "y2==samples[i]->y,";
 				sub_20 = sub_20 + 1;
@@ -1504,7 +1504,7 @@ void samples_test()
 			j1 = 0;
 			j2 = 0;
 			int flag3 = 0;
-			int o1 = -1;   //±£´æÑù±¾µÄÀà±ğ
+			int o1 = -1;   //ä¿å­˜æ ·æœ¬çš„ç±»åˆ«
 			int o2 = -1;
 			int o3 = -1;
 
@@ -1601,65 +1601,65 @@ void samples_test()
 	correct = nc1 + nc2 + zuhe;
 	fault = nc1_n + nc2_n + err;
 
-	double rate;//×ÜÌåÕıÈ·ÂÊ
+	double rate;//æ€»ä½“æ­£ç¡®ç‡
 	rate = double(correct) / double(samples.size());
 
-	double rate_all = 0;//È«ÊôĞÔÕıÈ·ÂÊ
+	double rate_all = 0;//å…¨å±æ€§æ­£ç¡®ç‡
 	rate_all = double(all) / double(bnd);
 
-	double rate_sub1 = 0;// Sub+ÕıÈ·ÂÊ
+	double rate_sub1 = 0;// Sub+æ­£ç¡®ç‡
 	rate_sub1 = double(sub_10) / double(bnd);
 
-	double rate_sub2 = 0;// Sub-ÕıÈ·ÂÊ
+	double rate_sub2 = 0;// Sub-æ­£ç¡®ç‡
 	rate_sub2 = double(sub_20) / double(bnd);
 
-	double rate_zuhe = 0;// ×éºÏÕıÈ·ÂÊ
+	double rate_zuhe = 0;// ç»„åˆæ­£ç¡®ç‡
 	rate_zuhe = double(zuhe) / double(bnd);
 
 	cout << endl;
-	cout << "+++++++++++×îÓÅ×éºÏ ÕıÈ··ÖÀà¸öÊı = " << b_concret << ",ÕıÓò¸öÊı = " << b_concret_1 << ",¸ºÓò¸öÊı = " << b_concret_2 << endl << "ÕıÈ·ÂÊ = " << double(b_concret) / double(bnd) << endl << endl << endl;
+	cout << "+++++++++++æœ€ä¼˜ç»„åˆ æ­£ç¡®åˆ†ç±»ä¸ªæ•° = " << b_concret << ",æ­£åŸŸä¸ªæ•° = " << b_concret_1 << ",è´ŸåŸŸä¸ªæ•° = " << b_concret_2 << endl << "æ­£ç¡®ç‡ = " << double(b_concret) / double(bnd) << endl << endl << endl;
 
-	cout << endl << "----------±ß½çÓò = " << bnd << ",ÆäÖĞ ÕıÓòÑù±¾¸öÊı = " << bnd_1 << ",¸ºÓòÑù±¾¸öÊı = " << bnd_2 << endl << endl;
-	cout << "¸ù¾İ È«ÊôĞÔ¶Ô±ß½çÓòÑù±¾½øĞĞ·ÖÀà£¬ÕıÈ··ÖÀà¸öÊı = " << all << ",ÆäÖĞ ÕıÀàÑù±¾¸öÊı = " << all_1 << ",¸ºÀàÑù±¾¸öÊı = " << all_2 << endl;
-	cout << "-----------ÕıÈ·ÂÊ = " << rate_all << endl << endl;
-	cout << "¸ù¾İ ×îÓÅSub+ÊôĞÔ²ã¶Ô±ß½çÓòÑù±¾½øĞĞ·ÖÀà£¬ÕıÈ··ÖÀà¸öÊı = " << sub_10 << ",ÆäÖĞ ÕıÀàÑù±¾¸öÊı = " << sub_11 << ",¸ºÀàÑù±¾¸öÊı = " << sub_12 << endl;
-	cout << "-----------ÕıÈ·ÂÊ = " << rate_sub1 << endl << endl;
-	cout << "¸ù¾İ ×îÓÅSub-ÊôĞÔ²ã¶Ô±ß½çÓòÑù±¾½øĞĞ·ÖÀà£¬ÕıÈ··ÖÀà¸öÊı = " << sub_20 << ",ÆäÖĞ ÕıÀàÑù±¾¸öÊı = " << sub_21 << ",¸ºÀàÑù±¾¸öÊı = " << sub_22 << endl;
-	cout << "-----------ÕıÈ·ÂÊ = " << rate_sub2 << endl << endl;
-	cout << "¸ù¾İ ×îÓÅSub+ºÍ×îÓÅSub-µÄ×éºÏ ¶Ô±ß½çÓòÑù±¾½øĞĞ·ÖÀà£¬ÕıÈ··ÖÀà¸öÊı = " << zuhe << ",ÆäÖĞ ÕıÀàÑù±¾¸öÊı = " << zuhe_1 << ",¸ºÀàÑù±¾¸öÊı = " << zuhe_2 << endl;
-	cout << "-----------ÕıÈ·ÂÊ = " << rate_zuhe << endl << endl;
+	cout << endl << "----------è¾¹ç•ŒåŸŸ = " << bnd << ",å…¶ä¸­ æ­£åŸŸæ ·æœ¬ä¸ªæ•° = " << bnd_1 << ",è´ŸåŸŸæ ·æœ¬ä¸ªæ•° = " << bnd_2 << endl << endl;
+	cout << "æ ¹æ® å…¨å±æ€§å¯¹è¾¹ç•ŒåŸŸæ ·æœ¬è¿›è¡Œåˆ†ç±»ï¼Œæ­£ç¡®åˆ†ç±»ä¸ªæ•° = " << all << ",å…¶ä¸­ æ­£ç±»æ ·æœ¬ä¸ªæ•° = " << all_1 << ",è´Ÿç±»æ ·æœ¬ä¸ªæ•° = " << all_2 << endl;
+	cout << "-----------æ­£ç¡®ç‡ = " << rate_all << endl << endl;
+	cout << "æ ¹æ® æœ€ä¼˜Sub+å±æ€§å±‚å¯¹è¾¹ç•ŒåŸŸæ ·æœ¬è¿›è¡Œåˆ†ç±»ï¼Œæ­£ç¡®åˆ†ç±»ä¸ªæ•° = " << sub_10 << ",å…¶ä¸­ æ­£ç±»æ ·æœ¬ä¸ªæ•° = " << sub_11 << ",è´Ÿç±»æ ·æœ¬ä¸ªæ•° = " << sub_12 << endl;
+	cout << "-----------æ­£ç¡®ç‡ = " << rate_sub1 << endl << endl;
+	cout << "æ ¹æ® æœ€ä¼˜Sub-å±æ€§å±‚å¯¹è¾¹ç•ŒåŸŸæ ·æœ¬è¿›è¡Œåˆ†ç±»ï¼Œæ­£ç¡®åˆ†ç±»ä¸ªæ•° = " << sub_20 << ",å…¶ä¸­ æ­£ç±»æ ·æœ¬ä¸ªæ•° = " << sub_21 << ",è´Ÿç±»æ ·æœ¬ä¸ªæ•° = " << sub_22 << endl;
+	cout << "-----------æ­£ç¡®ç‡ = " << rate_sub2 << endl << endl;
+	cout << "æ ¹æ® æœ€ä¼˜Sub+å’Œæœ€ä¼˜Sub-çš„ç»„åˆ å¯¹è¾¹ç•ŒåŸŸæ ·æœ¬è¿›è¡Œåˆ†ç±»ï¼Œæ­£ç¡®åˆ†ç±»ä¸ªæ•° = " << zuhe << ",å…¶ä¸­ æ­£ç±»æ ·æœ¬ä¸ªæ•° = " << zuhe_1 << ",è´Ÿç±»æ ·æœ¬ä¸ªæ•° = " << zuhe_2 << endl;
+	cout << "-----------æ­£ç¡®ç‡ = " << rate_zuhe << endl << endl;
 
 	cout << endl;
-	cout << "----------Í¨¹ı¸²¸Ç¶ÔÑù±¾½øĞĞ»®·Ö£¬ÕıÈ·»®·ÖµÄ¸öÊı = " << nc1 + nc2 << ",ÆäÖĞ£¬ÕıÀàÑù±¾¸öÊı = " << nc1 << ",¸ºÀàÑù±¾¸öÊı = " << nc2 << endl;
-	cout << "----------´íÎó»®·ÖµÄ¸öÊı = " << nc1_n + nc2_n << "--------------" << endl << endl;
+	cout << "----------é€šè¿‡è¦†ç›–å¯¹æ ·æœ¬è¿›è¡Œåˆ’åˆ†ï¼Œæ­£ç¡®åˆ’åˆ†çš„ä¸ªæ•° = " << nc1 + nc2 << ",å…¶ä¸­ï¼Œæ­£ç±»æ ·æœ¬ä¸ªæ•° = " << nc1 << ",è´Ÿç±»æ ·æœ¬ä¸ªæ•° = " << nc2 << endl;
+	cout << "----------é”™è¯¯åˆ’åˆ†çš„ä¸ªæ•° = " << nc1_n + nc2_n << "--------------" << endl << endl;
 
-	cout << "----------Í¨¹ı×îÓÅ²ã×éºÏ£¬ÕıÈ··ÖÀàµÄ¸öÊı =" << zuhe;
-	cout << "----------´íÎó·ÖÀàµÄ¸öÊı = " << err << "---------------" << endl << endl;
+	cout << "----------é€šè¿‡æœ€ä¼˜å±‚ç»„åˆï¼Œæ­£ç¡®åˆ†ç±»çš„ä¸ªæ•° =" << zuhe;
+	cout << "----------é”™è¯¯åˆ†ç±»çš„ä¸ªæ•° = " << err << "---------------" << endl << endl;
 
-	cout << "----------ÕıÈ··ÖÀà×ÜÊıÎª = nc1+nc2+zuhe=" << correct << "------------" << endl << endl;
-	cout << "----------´íÎó·ÖÀà×ÜÊıÎª =nc1_n+nc2_n+err= " << fault << "------------" << endl << endl;
+	cout << "----------æ­£ç¡®åˆ†ç±»æ€»æ•°ä¸º = nc1+nc2+zuhe=" << correct << "------------" << endl << endl;
+	cout << "----------é”™è¯¯åˆ†ç±»æ€»æ•°ä¸º =nc1_n+nc2_n+err= " << fault << "------------" << endl << endl;
 
-	cout << "----------Ñù±¾×ÜÊıÎª = samples.size()=" << samples.size() << "------------" << endl << endl;
-	cout << "----------ÕıÈ·ÂÊ = " << rate << "-------------" << endl;
+	cout << "----------æ ·æœ¬æ€»æ•°ä¸º = samples.size()=" << samples.size() << "------------" << endl << endl;
+	cout << "----------æ­£ç¡®ç‡ = " << rate << "-------------" << endl;
 }
 
 
 /*********************************************************************
-*	¶ÔÑù±¾ÎÄ¼şÖ´ĞĞÊ®½»²æÑéÖ¤
+*	å¯¹æ ·æœ¬æ–‡ä»¶æ‰§è¡Œåäº¤å‰éªŒè¯
 **********************************************************************/
 void nfoldCrossTest(double a, double b)
 {
 	const int N = 10;
-	int sampleCnt = samples.size();	//Ñù±¾×ÜÊı
-	int unit = sampleCnt / N;		//n fold Ã¿·İÑù±¾Êı
-	int sampleSelectedCnt = N*unit;	//Ñù±¾È¡Õû£¬ÎªÁË¼ÆËã¹«Æ½£¬È¥µôÕû·ÖºóµÄÁãÍ·
+	int sampleCnt = samples.size();	//æ ·æœ¬æ€»æ•°
+	int unit = sampleCnt / N;		//n fold æ¯ä»½æ ·æœ¬æ•°
+	int sampleSelectedCnt = N*unit;	//æ ·æœ¬å–æ•´ï¼Œä¸ºäº†è®¡ç®—å…¬å¹³ï¼Œå»æ‰æ•´åˆ†åçš„é›¶å¤´
 
 	vector<Sample*> samplesBak(samples);
-	random_shuffle(samplesBak.begin(), samplesBak.end()); //´òÂÒÑù±¾Ë³Ğò
+	random_shuffle(samplesBak.begin(), samplesBak.end()); //æ‰“ä¹±æ ·æœ¬é¡ºåº
 	vector<Sample*>::iterator itstart = samplesBak.begin();
 	vector<Sample*>::iterator iend = samplesBak.end();
 
-	iend -= (sampleCnt - sampleSelectedCnt);  // È¥µôÕû·ÖºóµÄÁãÍ· ÊıÄ¿
+	iend -= (sampleCnt - sampleSelectedCnt);  // å»æ‰æ•´åˆ†åçš„é›¶å¤´ æ•°ç›®
 	vector<Sample*>::iterator it1 = itstart;
 	vector<Sample*>::iterator it2 = itstart;
 	for (int i = 1; i <= N; ++i)
@@ -1673,7 +1673,7 @@ void nfoldCrossTest(double a, double b)
 		samples.insert(samples.begin(), it2, iend);
 
 		ExpResult *rel = new ExpResult;
-		Result.push_back(rel);	//ÊµÑéÊı¾İ¿Õ¼ä×¼±¸
+		Result.push_back(rel);	//å®éªŒæ•°æ®ç©ºé—´å‡†å¤‡
 		sample_train(a, b);
 
 		samples.clear();
@@ -1690,28 +1690,28 @@ void nfoldCrossTest(double a, double b)
 }
 
 /*********************************************************************
-*	ÏÔÊ¾Ñù±¾ÑµÁ·½á¹û
+*	æ˜¾ç¤ºæ ·æœ¬è®­ç»ƒç»“æœ
 **********************************************************************/
 void print_train_result()
 {
 	printf(
-		"ÑµÁ·½á¹û£º\n"
-		"ÑµÁ·Ñù±¾Îª£º%d¸ö£¬Î¬¶È£º%d£¬Àà±ğ£º%d\n"
-		"µÃµ½¸²¸ÇÊı£º%d¸ö\n"
-		"ÑµÁ·ºÄÊ±:%.4fs\n"
+		"è®­ç»ƒç»“æœï¼š\n"
+		"è®­ç»ƒæ ·æœ¬ä¸ºï¼š%dä¸ªï¼Œç»´åº¦ï¼š%dï¼Œç±»åˆ«ï¼š%d\n"
+		"å¾—åˆ°è¦†ç›–æ•°ï¼š%dä¸ª\n"
+		"è®­ç»ƒè€—æ—¶:%.4fs\n"
 		, samples.size(), samples[0]->dim - 1, I.size(), Result[0]->covNum, Result[0]->trTime
-		); //samples[0]->dim - 1£¬ÒòÎªÑù±¾ÔÚÍ¶Éäµ½ÇòÃæÊ±Ôö¼ÓÁËÒ»Î¬
+		); //samples[0]->dim - 1ï¼Œå› ä¸ºæ ·æœ¬åœ¨æŠ•å°„åˆ°çƒé¢æ—¶å¢åŠ äº†ä¸€ç»´
 }
 
 /*********************************************************************
-*	ÏÔÊ¾Ñù±¾²âÊÔ½á¹û
+*	æ˜¾ç¤ºæ ·æœ¬æµ‹è¯•ç»“æœ
 **********************************************************************/
 void print_test_result()
 {
-	printf("²âÊÔ½á¹û£º\n");
+	printf("æµ‹è¯•ç»“æœï¼š\n");
 	printf("-----------------------------------------------------------------------");
 	printf("-----------------------------------------------------------------------\n");
-	printf("²âÊÔÑù±¾Êı\t¿ÉÊ¶Ñù±¾Êı\t¿ÉÊ¶ÕıÈ·Êı\t¿ÉÊ¶ÕıÈ·ÂÊ\t¾ÜÊ¶Ñù±¾Êı\t¾ÜÊ¶ÕıÈ·Êı\t¾ÜÊ¶±È\t¾ÜÊ¶ÕıÈ·ÂÊ\t×ÜÕıÈ·ÂÊ\tºÄÊ±\n");
+	printf("æµ‹è¯•æ ·æœ¬æ•°\tå¯è¯†æ ·æœ¬æ•°\tå¯è¯†æ­£ç¡®æ•°\tå¯è¯†æ­£ç¡®ç‡\tæ‹’è¯†æ ·æœ¬æ•°\tæ‹’è¯†æ­£ç¡®æ•°\tæ‹’è¯†æ¯”\tæ‹’è¯†æ­£ç¡®ç‡\tæ€»æ­£ç¡®ç‡\tè€—æ—¶\n");
 	printf("-----------------------------------------------------------------------");
 	printf("-----------------------------------------------------------------------\n");
 	int t1 = 0, t2 = 0, t3 = 0; double t4 = 0.0; int t5 = 0, t6 = 0; double t7 = 0.0, t8 = 0.0, t9 = 0.0, t10 = 0.0;
@@ -1730,14 +1730,14 @@ void print_test_result()
 }
 
 /*********************************************************************
-*	ÏÔÊ¾Ê®½»²æÑéÖ¤½á¹û
+*	æ˜¾ç¤ºåäº¤å‰éªŒè¯ç»“æœ
 **********************************************************************/
 void print_nfold_result()
 {
-	printf("10½»²æÑéÖ¤:\n");
+	printf("10äº¤å‰éªŒè¯:\n");
 	printf("-------------------------------------------------------------------------------");
 	printf("-------------------------------------------------------------------------------\n");
-	printf("ÑµÁ·Ñù±¾Êı\t¸²¸ÇÊı\t²âÊÔÑù±¾Êı\t¿ÉÊ¶Ñù±¾Êı\t¿ÉÊ¶ÕıÈ·Êı\t¿ÉÊ¶ÕıÈ·ÂÊ\t¾ÜÊ¶Ñù±¾Êı\t¾ÜÊ¶ÕıÈ·Êı\t¾ÜÊ¶±È\t¾ÜÊ¶ÕıÈ·ÂÊ\t×ÜÕıÈ·ÂÊ\tºÄÊ±\t\tÕıtoÕı\t\tÕıto¸º\tÕıto±ß½ç\t¸ºtoÕı\t¸ºto¸º\t¸ºto±ß½ç\t\tC0Num\tC1Num\n");
+	printf("è®­ç»ƒæ ·æœ¬æ•°\tè¦†ç›–æ•°\tæµ‹è¯•æ ·æœ¬æ•°\tå¯è¯†æ ·æœ¬æ•°\tå¯è¯†æ­£ç¡®æ•°\tå¯è¯†æ­£ç¡®ç‡\tæ‹’è¯†æ ·æœ¬æ•°\tæ‹’è¯†æ­£ç¡®æ•°\tæ‹’è¯†æ¯”\tæ‹’è¯†æ­£ç¡®ç‡\tæ€»æ­£ç¡®ç‡\tè€—æ—¶\t\tæ­£toæ­£\t\tæ­£toè´Ÿ\tæ­£toè¾¹ç•Œ\tè´Ÿtoæ­£\tè´Ÿtoè´Ÿ\tè´Ÿtoè¾¹ç•Œ\t\tC0Num\tC1Num\n");
 	printf("-------------------------------------------------------------------------------");
 	printf("-------------------------------------------------------------------------------\n");
 
@@ -1776,7 +1776,7 @@ void print_nfold_result()
 	s0 /= n; s1 /= n; s2 /= n; s3 /= n; s4 /= n; s5 /= n; s6 /= n; s7 /= n; s8 /= n; s9 /= n; s10 /= n; s11 /= n; s12 /= n; s13 /= n; s14 /= n; s15 /= n; s16 /= n; s17 /= n; s21 /= n; s22 /= n;
 	printf("-------------------------------------------------------------------------------");
 	printf("-------------------------------------------------------------------------------\n");
-	printf("(Æ½¾ùÖµ)\n");
+	printf("(å¹³å‡å€¼)\n");
 	printf("%d\t\t%d\t%d\t\t%f\t\t%f\t\t%.2f%%\t\t%f\t\t%f\t\t%.2f%%\t%.2f%%\t\t%.2f%%\t\t%.4fs\t\%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
 		s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s14, s16, s15, s13, s17, s21, s22);
 	printf("-------------------------------------------------------------------------------");
@@ -1788,140 +1788,140 @@ void print_nfold_result()
 int main()
 {
 	//char btnums[4];
-	//cout << "Çë¸ø³ö»®·Ö±ß½çÓòµÄ·¶Î§£¨¸ñÊ½£º1»òÕß1,2£©£º";
+	//cout << "è¯·ç»™å‡ºåˆ’åˆ†è¾¹ç•ŒåŸŸçš„èŒƒå›´ï¼ˆæ ¼å¼ï¼š1æˆ–è€…1,2ï¼‰ï¼š";
 
 	//cin >> btnums;
 
-	cout << "ÊäÈë 1 £¬±íÊ¾½øĞĞÑµÁ·Ñù±¾£¬¶ÔÑù±¾½øĞĞ ÕıÓò£¬±ß½çÓò£¬¸ºÓò ·ÖÀà£¬²¢ÇÒÒÔtxtÎÄ¼şÊä³ö" << endl;
-	cout << "ÊäÈë 2 £¬±íÊ¾Ñ¡È¡ÕıÓòÀïµÄ×îÓÅÊôĞÔ²ã£¬¸ºÓòÀïµÄ×îÓÅÊôĞÔ²ã" << endl;
-	cout << "ÊäÈë 3 £¬±íÊ¾½øĞĞ Ñù±¾×ÜÌå²âÊÔ,ÒÔ¼° ÊÇ·ñ½øĞĞÊ®ÕÛ½»²æ²âÊÔ" << endl;
-	//cout << "ÊäÈë 4 £¬±íÊ¾½øĞĞÊ®ÕÛ½»²æ ²âÊÔ" << endl;
-	cout << "ÇëÊäÈë£¨1,2,3£©:";
+	cout << "è¾“å…¥ 1 ï¼Œè¡¨ç¤ºè¿›è¡Œè®­ç»ƒæ ·æœ¬ï¼Œå¯¹æ ·æœ¬è¿›è¡Œ æ­£åŸŸï¼Œè¾¹ç•ŒåŸŸï¼Œè´ŸåŸŸ åˆ†ç±»ï¼Œå¹¶ä¸”ä»¥txtæ–‡ä»¶è¾“å‡º" << endl;
+	cout << "è¾“å…¥ 2 ï¼Œè¡¨ç¤ºé€‰å–æ­£åŸŸé‡Œçš„æœ€ä¼˜å±æ€§å±‚ï¼Œè´ŸåŸŸé‡Œçš„æœ€ä¼˜å±æ€§å±‚" << endl;
+	cout << "è¾“å…¥ 3 ï¼Œè¡¨ç¤ºè¿›è¡Œ æ ·æœ¬æ€»ä½“æµ‹è¯•,ä»¥åŠ æ˜¯å¦è¿›è¡ŒåæŠ˜äº¤å‰æµ‹è¯•" << endl;
+	//cout << "è¾“å…¥ 4 ï¼Œè¡¨ç¤ºè¿›è¡ŒåæŠ˜äº¤å‰ æµ‹è¯•" << endl;
+	cout << "è¯·è¾“å…¥ï¼ˆ1,2,3ï¼‰:";
 	
 	int choice;
 	cin >> choice;
 	if (choice == 1)
 	{
 		int bint;
-		cout << "ÇëÊäÈë±ß½çÓòµÄ×î´ó·¶Î§£º";
+		cout << "è¯·è¾“å…¥è¾¹ç•ŒåŸŸçš„æœ€å¤§èŒƒå›´ï¼š";
 		cin >> bint;
-		cout << "ÕıÔÚ¼ÓÔØÑµÁ·Ñù±¾..." << endl;
-		loadSample("Êı¾İ¼¯car.txt");
-		cout << "ÕıÔÚ½øĞĞÕı¹æ»¯´¦Àí..." << endl;
+		cout << "æ­£åœ¨åŠ è½½è®­ç»ƒæ ·æœ¬..." << endl;
+		loadSample("æ•°æ®é›†car.txt");
+		cout << "æ­£åœ¨è¿›è¡Œæ­£è§„åŒ–å¤„ç†..." << endl;
 		vec_normalization();
 		projectToSphere();
 
-		cout << "ÕıÔÚÑµÁ·Ñù±¾·ÖÀà..." << endl;
+		cout << "æ­£åœ¨è®­ç»ƒæ ·æœ¬åˆ†ç±»..." << endl;
 		sample_train(0, 0);
 
-		cout << "Êä³ö£ºÕıÓò ±ß½çÓò ¸ºÓò ..." << endl;
+		cout << "è¾“å‡ºï¼šæ­£åŸŸ è¾¹ç•ŒåŸŸ è´ŸåŸŸ ..." << endl;
 		output_three_way_data(bint);
-		cout << endl << "************·ÖÀàÍê³É**********" << endl;
+		cout << endl << "************åˆ†ç±»å®Œæˆ**********" << endl;
 		
 		int np = POS_sample_id.size();
 		int nb = BND_sample_id.size();
 		int nn = NEG_sample_id.size();
 		int n = samples.size();
 		
-		cout << "ÕıÓòÑù±¾Êı = " << np << endl;
-		cout << "±ß½çÓòÑù±¾Êı = " << nb << endl;
-		cout << "¸ºÓòÑù±¾Êı = " << nn << endl;
-		cout << "ÕıÓò+¸ºÓò+±ß½çÓò = " << np + nb + nn << endl;
+		cout << "æ­£åŸŸæ ·æœ¬æ•° = " << np << endl;
+		cout << "è¾¹ç•ŒåŸŸæ ·æœ¬æ•° = " << nb << endl;
+		cout << "è´ŸåŸŸæ ·æœ¬æ•° = " << nn << endl;
+		cout << "æ­£åŸŸ+è´ŸåŸŸ+è¾¹ç•ŒåŸŸ = " << np + nb + nn << endl;
 		if ((np + nb + nn) == n)
 		{
-			cout << "ÕıÓò+¸ºÓò+±ß½çÓò = Ñù±¾×ÜÊı = " << n << endl;
+			cout << "æ­£åŸŸ+è´ŸåŸŸ+è¾¹ç•ŒåŸŸ = æ ·æœ¬æ€»æ•° = " << n << endl;
 		}
 		else
-			cout << "·ÖÀà³öÏÖ´íÎó£¡" << endl;
+			cout << "åˆ†ç±»å‡ºç°é”™è¯¯ï¼" << endl;
 		cin >> choice;
 	}
 	else if (choice == 2)
 	{
 		int bint;
-		cout << "ÇëÊäÈë±ß½çÓòµÄ×î´ó·¶Î§£º";
+		cout << "è¯·è¾“å…¥è¾¹ç•ŒåŸŸçš„æœ€å¤§èŒƒå›´ï¼š";
 		cin >> bint;
-		cout << "ÕıÔÚ¼ÓÔØÑµÁ·Ñù±¾..." << endl;
-		loadSample("Êı¾İ¼¯car.txt");
-		cout << "ÕıÔÚ½øĞĞÕı¹æ»¯´¦Àí..." << endl;
+		cout << "æ­£åœ¨åŠ è½½è®­ç»ƒæ ·æœ¬..." << endl;
+		loadSample("æ•°æ®é›†car.txt");
+		cout << "æ­£åœ¨è¿›è¡Œæ­£è§„åŒ–å¤„ç†..." << endl;
 		vec_normalization();
 		projectToSphere();
 
-		cout << "ÕıÔÚÑµÁ·Ñù±¾·ÖÀà..." << endl;
+		cout << "æ­£åœ¨è®­ç»ƒæ ·æœ¬åˆ†ç±»..." << endl;
 		sample_train(0, 0);
 
-		//cout << "Êä³ö£ºÕıÓò ±ß½çÓò ¸ºÓò ..." << endl;
+		//cout << "è¾“å‡ºï¼šæ­£åŸŸ è¾¹ç•ŒåŸŸ è´ŸåŸŸ ..." << endl;
 		output_three_way_data(bint);
-		cout << endl << "************·ÖÀàÍê³É**********" << endl;
+		cout << endl << "************åˆ†ç±»å®Œæˆ**********" << endl;
 
 		int np = POS_sample_id.size();
 		int nb = BND_sample_id.size();
 		int nn = NEG_sample_id.size();
 		int n = samples.size();
 
-		cout << "ÕıÓòÑù±¾Êı = " << np << endl;
-		cout << "±ß½çÓòÑù±¾Êı = " << nb << endl;
-		cout << "¸ºÓòÑù±¾Êı = " << nn << endl;
-		cout << "ÕıÓò+¸ºÓò+±ß½çÓò = " << np + nb + nn << endl;
+		cout << "æ­£åŸŸæ ·æœ¬æ•° = " << np << endl;
+		cout << "è¾¹ç•ŒåŸŸæ ·æœ¬æ•° = " << nb << endl;
+		cout << "è´ŸåŸŸæ ·æœ¬æ•° = " << nn << endl;
+		cout << "æ­£åŸŸ+è´ŸåŸŸ+è¾¹ç•ŒåŸŸ = " << np + nb + nn << endl;
 		if ((np + nb + nn) == n)
 		{
-			cout << "ÕıÓò+¸ºÓò+±ß½çÓò = Ñù±¾×ÜÊı = " << n << endl;
+			cout << "æ­£åŸŸ+è´ŸåŸŸ+è¾¹ç•ŒåŸŸ = æ ·æœ¬æ€»æ•° = " << n << endl;
 		}
 		else
-			cout << "·ÖÀà³öÏÖ´íÎó£¡" << endl;
+			cout << "åˆ†ç±»å‡ºç°é”™è¯¯ï¼" << endl;
 
-		cout << "----------Êä³ö×îÓÅ²ã----------"<<endl;
-		BND_test();  //Êä³ö×îÓÅ²ã       BND_tes(bint)ÀïÃæµ÷ÓÃÁËoutput_three_way_data(bint)º¯Êı
-		cout <<endl<< "************Íê³É************" << endl;
+		cout << "----------è¾“å‡ºæœ€ä¼˜å±‚----------"<<endl;
+		BND_test();  //è¾“å‡ºæœ€ä¼˜å±‚       BND_tes(bint)é‡Œé¢è°ƒç”¨äº†output_three_way_data(bint)å‡½æ•°
+		cout <<endl<< "************å®Œæˆ************" << endl;
 		cin >> choice;
 	}
 	else
 	if (choice == 3)
 	{
 		int bint;
-		cout << "ÇëÊäÈë±ß½çÓòµÄ×î´ó·¶Î§£º";
+		cout << "è¯·è¾“å…¥è¾¹ç•ŒåŸŸçš„æœ€å¤§èŒƒå›´ï¼š";
 		cin >> bint;
-		cout << "ÕıÔÚ¼ÓÔØÑµÁ·Ñù±¾..." << endl;
-		loadSample("Êı¾İ¼¯car.txt");
-		cout << "ÕıÔÚ½øĞĞÕı¹æ»¯´¦Àí..." << endl;
+		cout << "æ­£åœ¨åŠ è½½è®­ç»ƒæ ·æœ¬..." << endl;
+		loadSample("æ•°æ®é›†car.txt");
+		cout << "æ­£åœ¨è¿›è¡Œæ­£è§„åŒ–å¤„ç†..." << endl;
 		vec_normalization();
 		projectToSphere();
 
-		cout << "ÕıÔÚÑµÁ·Ñù±¾·ÖÀà..." << endl;
+		cout << "æ­£åœ¨è®­ç»ƒæ ·æœ¬åˆ†ç±»..." << endl;
 		sample_train(0, 0);
 
-		cout << "Êä³ö£ºÕıÓò ±ß½çÓò ¸ºÓò ..." << endl;
+		cout << "è¾“å‡ºï¼šæ­£åŸŸ è¾¹ç•ŒåŸŸ è´ŸåŸŸ ..." << endl;
 		output_three_way_data(bint);
-		cout << endl << "************·ÖÀàÍê³É**********" << endl;
+		cout << endl << "************åˆ†ç±»å®Œæˆ**********" << endl;
 
 		int np = POS_sample_id.size();
 		int nb = BND_sample_id.size();
 		int nn = NEG_sample_id.size();
 		int n = samples.size();
 
-		cout << "ÕıÓòÑù±¾Êı = " << np << endl;
-		cout << "±ß½çÓòÑù±¾Êı = " << nb << endl;
-		cout << "¸ºÓòÑù±¾Êı = " << nn << endl;
-		cout << "ÕıÓò+¸ºÓò+±ß½çÓò = " << np + nb + nn << endl;
+		cout << "æ­£åŸŸæ ·æœ¬æ•° = " << np << endl;
+		cout << "è¾¹ç•ŒåŸŸæ ·æœ¬æ•° = " << nb << endl;
+		cout << "è´ŸåŸŸæ ·æœ¬æ•° = " << nn << endl;
+		cout << "æ­£åŸŸ+è´ŸåŸŸ+è¾¹ç•ŒåŸŸ = " << np + nb + nn << endl;
 		if ((np + nb + nn) == n)
 		{
-			cout << "ÕıÓò+¸ºÓò+±ß½çÓò = Ñù±¾×ÜÊı = " << n << endl;
+			cout << "æ­£åŸŸ+è´ŸåŸŸ+è¾¹ç•ŒåŸŸ = æ ·æœ¬æ€»æ•° = " << n << endl;
 		}
 		else
-			cout << "·ÖÀà³öÏÖ´íÎó£¡" << endl;
+			cout << "åˆ†ç±»å‡ºç°é”™è¯¯ï¼" << endl;
 
-		cout << "----------Êä³ö×îÓÅ²ã----------" << endl;
+		cout << "----------è¾“å‡ºæœ€ä¼˜å±‚----------" << endl;
 		BND_test();
 
-		cout << "¶Ô×ÜÌåÑù±¾½øĞĞ²âÊÔ..." << endl;
-		samples_test();//ÓÃ¸²¸ÇÏÈ¶ÔÈ·¶¨µÄÑù±¾½øĞĞ»®·Ö £¬ÔÙÓÃÑ¡È¡µÄ×îÓÅ²ã£¬¶Ô±ß½çÓòÑù±¾½øĞĞ»®·Ö
+		cout << "å¯¹æ€»ä½“æ ·æœ¬è¿›è¡Œæµ‹è¯•..." << endl;
+		samples_test();//ç”¨è¦†ç›–å…ˆå¯¹ç¡®å®šçš„æ ·æœ¬è¿›è¡Œåˆ’åˆ† ï¼Œå†ç”¨é€‰å–çš„æœ€ä¼˜å±‚ï¼Œå¯¹è¾¹ç•ŒåŸŸæ ·æœ¬è¿›è¡Œåˆ’åˆ†
 		
-		cout << endl << "************×ÜÌåÑù±¾²âÊÔÍê³É************" << endl<<endl;
+		cout << endl << "************æ€»ä½“æ ·æœ¬æµ‹è¯•å®Œæˆ************" << endl<<endl;
 		
-		cout << "¼ÌĞø½øĞĞ Ê®ÕÛ½»²æ²âÊÔ£º" << endl;
+		cout << "ç»§ç»­è¿›è¡Œ åæŠ˜äº¤å‰æµ‹è¯•ï¼š" << endl;
 		nfoldCrossTest(0, 0);
 		cin >> choice;
 
-		/*cout << "ÊÇ·ñ¼ÌĞø½øĞĞ Ê®ÕÛ½»²æ²âÊÔ£¿£¨ÊäÈë1±íÊ¾½øĞĞ£¬·ñÔò½áÊø£©£º";
+		/*cout << "æ˜¯å¦ç»§ç»­è¿›è¡Œ åæŠ˜äº¤å‰æµ‹è¯•ï¼Ÿï¼ˆè¾“å…¥1è¡¨ç¤ºè¿›è¡Œï¼Œå¦åˆ™ç»“æŸï¼‰ï¼š";
 		int select;
 		cin >> select;
 		if (select == 1)
@@ -1936,39 +1936,39 @@ int main()
 	//if (choice == 4)
 	//{
 	//	int bint;
-	//	cout << "ÇëÊäÈë±ß½çÓòµÄ×î´ó·¶Î§£º";
+	//	cout << "è¯·è¾“å…¥è¾¹ç•ŒåŸŸçš„æœ€å¤§èŒƒå›´ï¼š";
 	//	cin >> bint;
-	//	cout << "ÕıÔÚ¼ÓÔØÑµÁ·Ñù±¾..." << endl;
-	//	loadSample("Êı¾İ¼¯spambase.data");
-	//	cout << "ÕıÔÚ½øĞĞÕı¹æ»¯´¦Àí..." << endl;
+	//	cout << "æ­£åœ¨åŠ è½½è®­ç»ƒæ ·æœ¬..." << endl;
+	//	loadSample("æ•°æ®é›†spambase.data");
+	//	cout << "æ­£åœ¨è¿›è¡Œæ­£è§„åŒ–å¤„ç†..." << endl;
 	//	vec_normalization();
 	//	projectToSphere();
 	//	sample_train(0, 0);
 
 	//	nfoldCrossTest(0, 0);
 	//	//print_nfold_result();
-	//	cout <<endl<< "************Íê³É************" << endl;
+	//	cout <<endl<< "************å®Œæˆ************" << endl;
 	//	cin >> choice;
 	//}
 	//int bint;
-	//cout << "ÇëÊäÈë±ß½çÓòµÄ×î´ó·¶Î§£º";
+	//cout << "è¯·è¾“å…¥è¾¹ç•ŒåŸŸçš„æœ€å¤§èŒƒå›´ï¼š";
 	//cin >> bint;
 
-	//cout << "ÕıÔÚ¼ÓÔØÑµÁ·Ñù±¾..." << endl;
-	//loadSample("chess.txt"); //¼ÓÔØÑµÁ·Ñù±¾
-	//cout << "ÕıÔÚ½øĞĞÕı¹æ»¯´¦Àí..." << endl;
+	//cout << "æ­£åœ¨åŠ è½½è®­ç»ƒæ ·æœ¬..." << endl;
+	//loadSample("chess.txt"); //åŠ è½½è®­ç»ƒæ ·æœ¬
+	//cout << "æ­£åœ¨è¿›è¡Œæ­£è§„åŒ–å¤„ç†..." << endl;
 	//vec_normalization();
-	//cout << "ÕıÔÚ½«Ñù±¾Í¶Éäµ½ÇòÃæ..." << endl;
-	//projectToSphere();//Ñù±¾Í¶Éäµ½ÇòÃæ
+	//cout << "æ­£åœ¨å°†æ ·æœ¬æŠ•å°„åˆ°çƒé¢..." << endl;
+	//projectToSphere();//æ ·æœ¬æŠ•å°„åˆ°çƒé¢
 
 	////nfoldCrossTest(0, 0);
-	////cout << "ÕıÔÚÑµÁ·Ñù±¾·ÖÀà..." << endl;
+	////cout << "æ­£åœ¨è®­ç»ƒæ ·æœ¬åˆ†ç±»..." << endl;
 	//
 	////sample_train(0, 0);
 	//
 	//// print_nfold_result();
-	////cout << "ÕıÔÚÊä³ö½á¹û..." << endl;
-	//// Êä³öÈıÀàÊı¾İ
+	////cout << "æ­£åœ¨è¾“å‡ºç»“æœ..." << endl;
+	//// è¾“å‡ºä¸‰ç±»æ•°æ®
 	////output_three_way_data(bint);
 	//cout << "*************************" << endl << endl;
 
@@ -1983,13 +1983,13 @@ int main()
 }
 
 /*********************************************************************
-*	Ö÷º¯Êı
+*	ä¸»å‡½æ•°
 **********************************************************************/
 /*int main()
 {
-printf("1. ÑµÁ·\n");
-printf("2. ²âÊÔ\n");
-printf("3. Ê®½»²æÑéÖ¤\n");
+printf("1. è®­ç»ƒ\n");
+printf("2. æµ‹è¯•\n");
+printf("3. åäº¤å‰éªŒè¯\n");
 printf("Choose:\n");
 int choice=0 ;
 cin>>choice ;
@@ -1998,29 +1998,29 @@ getchar() ;
 if(choice==1)
 {
 	double a,b;
-	cout<<"ÊäÈëa="<<endl;
+	cout<<"è¾“å…¥a="<<endl;
 	cin>>a;
-	loadSample("iris.txt"); //¼ÓÔØÑµÁ·Ñù±¾
-	projectToSphere() ;//Ñù±¾Í¶Éäµ½ÇòÃæ
-	ExpResult* rs = new ExpResult ;//ÊµÑéÊı¾İ¿Õ¼ä×¼±¸
+	loadSample("iris.txt"); //åŠ è½½è®­ç»ƒæ ·æœ¬
+	projectToSphere() ;//æ ·æœ¬æŠ•å°„åˆ°çƒé¢
+	ExpResult* rs = new ExpResult ;//å®éªŒæ•°æ®ç©ºé—´å‡†å¤‡
 	memset(rs,0,sizeof(ExpResult)) ;
 	Result.push_back(rs) ;
 	sample_train(a,b) ;
-	save_model_to_file("model.txt") ;	//±£´æÑµÁ·½á¹ûÊı¾İ
-	print_train_result() ; //ÏÔÊ¾ÑµÁ·½á¹û
+	save_model_to_file("model.txt") ;	//ä¿å­˜è®­ç»ƒç»“æœæ•°æ®
+	print_train_result() ; //æ˜¾ç¤ºè®­ç»ƒç»“æœ
 }
 
 else 
 	if(choice==2)
 	{
-		loadSample("iris.txt"); //¼ÓÔØÑµÁ·Ñù±¾
-		projectToSphere() ;//Ñù±¾Í¶Éäµ½ÇòÃæ
+		loadSample("iris.txt"); //åŠ è½½è®­ç»ƒæ ·æœ¬
+		projectToSphere() ;//æ ·æœ¬æŠ•å°„åˆ°çƒé¢
 		ExpResult *rs = new ExpResult ;
 		memset(rs,0,sizeof(ExpResult)) ;
-		Result.push_back(rs) ;		//ÊµÑéÊı¾İ¿Õ¼ä×¼±¸
-		load_model_from_file("model.txt") ;	//¼ÓÔØÄ£ĞÍÊı¾İ
+		Result.push_back(rs) ;		//å®éªŒæ•°æ®ç©ºé—´å‡†å¤‡
+		load_model_from_file("model.txt") ;	//åŠ è½½æ¨¡å‹æ•°æ®
 		sample_test() ;
-		print_test_result() ; //ÏÔÊ¾²âÊÔ½á¹û
+		print_test_result() ; //æ˜¾ç¤ºæµ‹è¯•ç»“æœ
 	}
 	else 
 		if(choice==3)
@@ -2030,16 +2030,16 @@ else
 			cin>>a;
 			cout<<"b=";
 			cin>>b;
-			loadSample("chess.txt"); //¼ÓÔØÑµÁ·Ñù±¾
+			loadSample("chess.txt"); //åŠ è½½è®­ç»ƒæ ·æœ¬
 			vec_normalization();
-			projectToSphere() ;//Ñù±¾Í¶Éäµ½ÇòÃæ
+			projectToSphere() ;//æ ·æœ¬æŠ•å°„åˆ°çƒé¢
 
 			nfoldCrossTest(a,b) ;
 			print_nfold_result() ;
 		}
 		else
 		{
-			cout<<"´íÎó!"<<endl ;
+			cout<<"é”™è¯¯!"<<endl ;
 		}
 
 getchar() ;
